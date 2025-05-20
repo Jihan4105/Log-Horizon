@@ -1,15 +1,17 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Shadows_Into_Light_Two, Homemade_Apple } from "next/font/google";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const shadowsIntoLightTwo = Shadows_Into_Light_Two({
+  variable: "--font-shadows-into-light-two",
   subsets: ["latin"],
+  weight: "400",
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+const homemadeApple = Homemade_Apple({
+  variable: "--font-homemade-apple",
   subsets: ["latin"],
+  weight: "400",
 });
 
 export const metadata: Metadata = {
@@ -25,7 +27,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${shadowsIntoLightTwo.variable} ${homemadeApple.variable} antialiased`}
       >
         {children}
       </body>
