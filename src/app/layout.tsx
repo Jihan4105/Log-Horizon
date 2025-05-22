@@ -1,18 +1,6 @@
 import type { Metadata } from "next";
-import { Shadows_Into_Light_Two, Homemade_Apple } from "next/font/google";
 import "./globals.css";
-
-const shadowsIntoLightTwo = Shadows_Into_Light_Two({
-  variable: "--font-shadows-into-light-two",
-  subsets: ["latin"],
-  weight: "400",
-});
-
-const homemadeApple = Homemade_Apple({
-  variable: "--font-homemade-apple",
-  subsets: ["latin"],
-  weight: "400",
-});
+import { shadowsIntoLightTwo } from "@/lib/font";
 
 export const metadata: Metadata = {
   title: "Create Next App",
@@ -27,7 +15,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${shadowsIntoLightTwo.variable} ${homemadeApple.variable} antialiased`}
+        className={`${shadowsIntoLightTwo.className} antialiased`}
       >
         {children}
       </body>
