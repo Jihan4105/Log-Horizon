@@ -7,6 +7,8 @@ import Link from "next/link";
 // Icons
 import { IoHomeOutline } from "react-icons/io5";
 import { IoMdClose } from "react-icons/io";
+import { HiMiniBars3 } from "react-icons/hi2";
+import { IoClipboardOutline } from "react-icons/io5";
 
 export default function AdminLayout ({
   children,
@@ -44,14 +46,22 @@ export default function AdminLayout ({
           New Post
         </Link>
 
-        <li className="flex flex-col gap-5">
-          <ul>
-            <Link href="/dashboard" className="flex gap-2 mt-10 items-center">
+        <div className="flex flex-col gap-5">
+          <div className="flex items-center mt-10">
+            <Link href="/dashboard" className="flex gap-2 items-center">
               <IoHomeOutline className="size-[30px]"/>
               <span className="text-[20px]">Blog Home</span>
             </Link>
-          </ul>
-        </li>
+          </div>
+          <div className="flex items-center gap-2">
+            <IoClipboardOutline className="size-[30px]"/>
+            <span className="text-[20px]">Contents</span>
+          </div>
+          <div className="flex flex-col gap-3 pl-6">
+            <span><Link href="/admin/posts">Post Management</Link></span>
+            <span><Link href="/admin/category">Category Management</Link></span>
+          </div>
+        </div>
       </aside>
 
       {/* Overlay */}
@@ -72,19 +82,16 @@ export default function AdminLayout ({
       <div className="flex-col p-10">
         {/* Toggle Button */}
         <button 
-          className="md:hidden p-4 text-[30px] top-0 left-0 border relative" 
+          className="md:hidden p-2 text-[20px] top-0 left-0 relative transition-colors duration-300 ease-in-out hover:bg-gray-100 rounded-[5px] cursor-pointer" 
           onClick={() => {
             setSidebarStatus(!sidebarStatus) 
             setOverlayStatus(!overlayStatus)
           }}
         >
-          Toggle
+          <HiMiniBars3 />
         </button>
         {/* Contents */}
         {children}
-        <div className="mt-10 p-2 border rounded-2xl md:translate-y-5 transition-all duration-300 ease-in-out">
-          Hover me
-        </div>
       </div>
 
     </main>
