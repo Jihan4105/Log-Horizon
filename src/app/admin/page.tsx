@@ -9,7 +9,7 @@ export const metadata: Metadata = {
 
 export default function AdminDashboardPage() {
   return (
-    <div className="p-10">
+    <div>
       <Button variant={"ghost"} size={"icon"}>
         <HiMiniBars3 />
       </Button>
