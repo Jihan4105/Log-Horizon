@@ -21,13 +21,38 @@ import {
 export const description = "A multiple line chart"
 
 const chartData = [
-  { month: "January", desktop: 186, mobile: 80 },
-  { month: "February", desktop: 305, mobile: 200 },
-  { month: "March", desktop: 237, mobile: 120 },
-  { month: "April", desktop: 73, mobile: 190 },
-  { month: "May", desktop: 209, mobile: 130 },
-  { month: "June", desktop: 214, mobile: 140 },
-]
+  { date: "2025-05-01", dailyVisitor: 186, dailyViewer: 104 },
+  { date: "2025-05-02", dailyVisitor: 195, dailyViewer: 110 },
+  { date: "2025-05-03", dailyVisitor: 173, dailyViewer: 98 },
+  { date: "2025-05-04", dailyVisitor: 201, dailyViewer: 120 },
+  { date: "2025-05-05", dailyVisitor: 160, dailyViewer: 87 },
+  { date: "2025-05-06", dailyVisitor: 188, dailyViewer: 101 },
+  { date: "2025-05-07", dailyVisitor: 175, dailyViewer: 95 },
+  { date: "2025-05-08", dailyVisitor: 190, dailyViewer: 103 },
+  { date: "2025-05-09", dailyVisitor: 182, dailyViewer: 99 },
+  { date: "2025-05-10", dailyVisitor: 200, dailyViewer: 115 },
+  { date: "2025-05-11", dailyVisitor: 176, dailyViewer: 93 },
+  { date: "2025-05-12", dailyVisitor: 191, dailyViewer: 100 },
+  { date: "2025-05-13", dailyVisitor: 185, dailyViewer: 97 },
+  { date: "2025-05-14", dailyVisitor: 199, dailyViewer: 110 },
+  { date: "2025-05-15", dailyVisitor: 178, dailyViewer: 96 },
+  { date: "2025-05-16", dailyVisitor: 192, dailyViewer: 102 },
+  { date: "2025-05-17", dailyVisitor: 183, dailyViewer: 95 },
+  { date: "2025-05-18", dailyVisitor: 189, dailyViewer: 105 },
+  { date: "2025-05-19", dailyVisitor: 170, dailyViewer: 90 },
+  { date: "2025-05-20", dailyVisitor: 194, dailyViewer: 108 },
+  { date: "2025-05-21", dailyVisitor: 181, dailyViewer: 99 },
+  { date: "2025-05-22", dailyVisitor: 196, dailyViewer: 107 },
+  { date: "2025-05-23", dailyVisitor: 187, dailyViewer: 98 },
+  { date: "2025-05-24", dailyVisitor: 193, dailyViewer: 101 },
+  { date: "2025-05-25", dailyVisitor: 179, dailyViewer: 92 },
+  { date: "2025-05-26", dailyVisitor: 200, dailyViewer: 114 },
+  { date: "2025-05-27", dailyVisitor: 177, dailyViewer: 91 },
+  { date: "2025-05-28", dailyVisitor: 198, dailyViewer: 109 },
+  { date: "2025-05-29", dailyVisitor: 184, dailyViewer: 97 },
+  { date: "2025-05-30", dailyVisitor: 190, dailyViewer: 103 },
+  { date: "2025-05-31", dailyVisitor: 202, dailyViewer: 118 },
+];
 
 const chartConfig = {
   desktop: {
@@ -42,10 +67,10 @@ const chartConfig = {
 
 export default function DashboardChart() {
   return (
-    <Card>
+    <Card className="border-0 shadow-none">
       <CardHeader>
-        <CardTitle>Line Chart - Multiple</CardTitle>
-        <CardDescription>January - June 2024</CardDescription>
+        <CardTitle>Monthly Statistics</CardTitle>
+        <CardDescription>May - June</CardDescription>
       </CardHeader>
       <CardContent>
         <ChartContainer config={chartConfig}>
@@ -59,24 +84,28 @@ export default function DashboardChart() {
           >
             <CartesianGrid vertical={false} />
             <XAxis
-              dataKey="month"
+              dataKey="date"
               tickLine={false}
               axisLine={false}
               tickMargin={8}
-              tickFormatter={(value) => value.slice(0, 3)}
+              interval={6} // Show every 7th tick (0-based index)
+              tickFormatter={(value) => {
+                // Show only the day part (e.g., "01", "08", "15", ...)
+                return value.slice(8, 10);
+              }}
             />
             <ChartTooltip cursor={false} content={<ChartTooltipContent />} />
             <Line
-              dataKey="desktop"
+              dataKey="dailyVisitor"
               type="monotone"
-              stroke="red"
+              stroke="#FF6A6A"
               strokeWidth={2}
               dot={false}
             />
             <Line
-              dataKey="mobile"
+              dataKey="dailyViewer"
               type="monotone"
-              stroke="blue"
+              stroke="#7979FF"
               strokeWidth={2}
               dot={false}
             />
@@ -87,10 +116,10 @@ export default function DashboardChart() {
         <div className="flex w-full items-start gap-2 text-sm">
           <div className="grid gap-2">
             <div className="flex items-center gap-2 leading-none font-medium">
-              Trending up by 5.2% this month <TrendingUp className="h-4 w-4" />
+              <div className="size-3 bg-[#FF6A6A]"/> Daily Visitors
             </div>
             <div className="text-muted-foreground flex items-center gap-2 leading-none">
-              Showing total visitors for the last 6 months
+              <div className="size-3 bg-[#7979FF]"/> Daily Viewers
             </div>
           </div>
         </div>
@@ -98,22 +127,3 @@ export default function DashboardChart() {
     </Card>
   )
 }
-
-
-// "use client";
-// import { LineChart, Line, XAxis, CartesianGrid } from "recharts";
-
-// const data = [
-//   { name: "A", uv: 100 },
-//   { name: "B", uv: 200 },
-// ];
-
-// export default function TestChart() {
-//   return (
-//     <LineChart width={300} height={200} data={data}>
-//       <XAxis dataKey="name" />
-//       <CartesianGrid stroke="#eee" strokeDasharray="5 5" />
-//       <Line type="monotone" dataKey="uv" stroke="#8884d8" />
-//     </LineChart>
-//   );
-// }

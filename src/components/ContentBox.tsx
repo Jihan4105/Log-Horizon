@@ -11,7 +11,7 @@ export default function ContentBox({
     <div
       className={`bg-[#E2F0FF] p-2 rounded-[5px] ${widthClassName}`}
     >
-      <p className="text-[18px]">{title}</p>
+      <p className="text-[18px] mb-1">{title}</p>
       <div className="bg-white rounded-[5px] grid place-items-center">
         {children}
       </div>
