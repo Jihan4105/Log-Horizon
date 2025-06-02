@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import ContentBox from "@/components/ContentBox";
+import DashboardChart from "@/components/DashboardChart";
 
 export const metadata: Metadata = {
   title: "AdminDashboard"
@@ -16,25 +17,26 @@ export default function AdminDashboardPage() {
             <span className="text-green-400 text-[16px]">+4</span>
           </div>
         </ContentBox>
-        <ContentBox title="Today's visitors">
+        <ContentBox title="Number of visitors">
           <div className="flex gap-2 text-2xl py-8 items-center">
-            12
-            <span className="text-green-400 text-[16px]">+4</span>
+            562
+            {/* <span className="text-green-400 text-[16px]">+4</span> */}
           </div>
         </ContentBox>
-        <ContentBox title="Today's visitors">
+        <ContentBox title="Today's views">
           <div className="flex gap-2 text-2xl py-8 items-center">
-            12
-            <span className="text-green-400 text-[16px]">+4</span>
+            104
+            <span className="text-red-400 text-[16px]">-12</span>
           </div>
         </ContentBox>
-        <ContentBox title="Today's visitors">
+        <ContentBox title="Number of views">
           <div className="flex gap-2 text-2xl py-8 items-center">
-            12
-            <span className="text-green-400 text-[16px]">+4</span>
+            1738
+            {/* <span className="text-green-400 text-[16px]">+4</span> */}
           </div>
         </ContentBox>
       </div>
+      <DashboardChart />
     </>
   )
 }
