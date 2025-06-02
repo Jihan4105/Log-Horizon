@@ -9,6 +9,9 @@ import { IoHomeOutline } from "react-icons/io5";
 import { IoMdClose } from "react-icons/io";
 import { HiMiniBars3 } from "react-icons/hi2";
 import { IoClipboardOutline } from "react-icons/io5";
+import { IoChatbubbleEllipsesOutline } from "react-icons/io5";
+import { LuUserRoundCog } from "react-icons/lu";
+
 
 export default function AdminLayout ({
   children,
@@ -61,6 +64,20 @@ export default function AdminLayout ({
             <span><Link href="/admin/posts">Post Management</Link></span>
             <span><Link href="/admin/category">Category Management</Link></span>
           </div>
+          <div className="flex items-center gap-2">
+            <IoChatbubbleEllipsesOutline className="size-[30px]"/>
+            <span className="text-[20px]">Comments</span>
+          </div>
+          <div className="flex flex-col gap-3 pl-6">
+            <span><Link href="/admin/comment">Post Management</Link></span>
+          </div>
+          <div className="flex items-center gap-2">
+            <LuUserRoundCog className="size-[30px]"/>
+            <span className="text-[20px]">User</span>
+          </div>
+          <div className="flex flex-col gap-3 pl-6">
+            <span><Link href="/admin/user">User Management</Link></span>
+          </div>
         </div>
       </aside>
 
@@ -79,7 +96,7 @@ export default function AdminLayout ({
         }}
       />
   
-      <div className="flex-col p-10">
+      <div className="flex-col p-5 md:p-10 w-full h-full">
         {/* Toggle Button */}
         <button 
           className="md:hidden p-2 text-[20px] top-0 left-0 relative transition-colors duration-300 ease-in-out hover:bg-gray-100 rounded-[5px] cursor-pointer" 
