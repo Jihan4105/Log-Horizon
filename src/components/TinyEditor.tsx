@@ -6,7 +6,7 @@ export default function TinyEditor() {
   return (
     <div>
       <Editor
-        apiKey={process.env.TINY_APIKEY}
+        apiKey={process.env.NEXT_PUBLIC_TINY_APIKEY}
         init={{
           plugins: [
             // Core editing features
