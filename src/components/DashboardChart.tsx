@@ -1,16 +1,7 @@
 "use client"
 
-import { TrendingUp } from "lucide-react"
 import { CartesianGrid, Line, LineChart, XAxis } from "recharts"
 
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card"
 import {
   ChartConfig,
   ChartContainer,
@@ -67,63 +58,59 @@ const chartConfig = {
 
 export default function DashboardChart() {
   return (
-    <Card className="border-0 shadow-none">
-      <CardHeader>
-        <CardTitle>Monthly Statistics</CardTitle>
-        <CardDescription>May - June</CardDescription>
-      </CardHeader>
-      <CardContent>
-        <ChartContainer config={chartConfig}>
-          <LineChart
-            accessibilityLayer
-            data={chartData}
-            margin={{
-              left: 12,
-              right: 12,
+    <div className="border-0 shadow-none">
+      <div>
+        <p className="text-[25px]">Monthly Statics</p>
+        <p className="text-[14px]">May - June</p>
+      </div>
+      <ChartContainer config={chartConfig} className="mt-3">
+        <LineChart
+          accessibilityLayer
+          data={chartData}
+          margin={{
+            left: 12,
+            right: 12,
+          }}
+        >
+          <CartesianGrid vertical={false} />
+          <XAxis
+            dataKey="date"
+            tickLine={false}
+            axisLine={false}
+            tickMargin={8}
+            interval={6} // Show every 7th tick (0-based index)
+            tickFormatter={(value) => {
+              // Show only the day part (e.g., "01", "08", "15", ...)
+              return value.slice(8, 10);
             }}
-          >
-            <CartesianGrid vertical={false} />
-            <XAxis
-              dataKey="date"
-              tickLine={false}
-              axisLine={false}
-              tickMargin={8}
-              interval={6} // Show every 7th tick (0-based index)
-              tickFormatter={(value) => {
-                // Show only the day part (e.g., "01", "08", "15", ...)
-                return value.slice(8, 10);
-              }}
-            />
-            <ChartTooltip cursor={false} content={<ChartTooltipContent />} />
-            <Line
-              dataKey="dailyVisitor"
-              type="monotone"
-              stroke="#FF6A6A"
-              strokeWidth={2}
-              dot={false}
-            />
-            <Line
-              dataKey="dailyViewer"
-              type="monotone"
-              stroke="#7979FF"
-              strokeWidth={2}
-              dot={false}
-            />
-          </LineChart>
-        </ChartContainer>
-      </CardContent>
-      <CardFooter>
-        <div className="flex w-full items-start gap-2 text-sm">
-          <div className="grid gap-2">
-            <div className="flex items-center gap-2 leading-none font-medium">
-              <div className="size-3 bg-[#FF6A6A]"/> Daily Visitors
-            </div>
-            <div className="text-muted-foreground flex items-center gap-2 leading-none">
-              <div className="size-3 bg-[#7979FF]"/> Daily Viewers
-            </div>
+          />
+          <ChartTooltip cursor={false} content={<ChartTooltipContent />} />
+          <Line
+            dataKey="dailyVisitor"
+            type="monotone"
+            stroke="#FF6A6A"
+            strokeWidth={2}
+            dot={false}
+          />
+          <Line
+            dataKey="dailyViewer"
+            type="monotone"
+            stroke="#7979FF"
+            strokeWidth={2}
+            dot={false}
+          />
+        </LineChart>
+      </ChartContainer>
+      <div className="flex w-full items-start gap-2 text-sm mt-3">
+        <div className="grid gap-2">
+          <div className="flex items-center gap-2 leading-none font-medium">
+            <div className="size-3 bg-[#FF6A6A]"/> Daily Visitors
+          </div>
+          <div className="text-muted-foreground flex items-center gap-2 leading-none">
+            <div className="size-3 bg-[#7979FF]"/> Daily Viewers
           </div>
         </div>
-      </CardFooter>
-    </Card>
+      </div>
+    </div>
   )
 }
