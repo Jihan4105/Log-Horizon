@@ -6,7 +6,7 @@ export default function Home() {
   return (
     <main className="min-h-screen min-w-screen bg-[url('/images/login-background.jpg')] bg-cover bg-center grid place-items-center">
       <form className="flex flex-col items-center xl:mb-40 mb-60">
-        <p className={`${homemadeApple.className} text-5xl mb-20`}>Log Horizon</p>
+        <p className={`${homemadeApple.className} text-4xl mb-20 md:text-5xl`}>Log Horizon</p>
 
         <p className={`${homemadeApple.className} text-[25px]`}>Email</p>
         <input id="email" className="outline-none p-3 border-b border-black mb-24" type="text" name="email"/>

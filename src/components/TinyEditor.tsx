@@ -23,7 +23,7 @@ export default function TinyEditor() {
             { value: 'Email', title: 'Email' },
           ],
         }}
-        initialValue="Welcome to TinyMCE!"
+        initialValue="..."
       />
     </div>
   );
