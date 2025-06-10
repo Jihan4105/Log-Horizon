@@ -50,7 +50,7 @@ function Button({
   return (
     <Comp
       data-slot="button"
-      className={`${cn(buttonVariants({ variant, size, className }))} cursor-pointer`}
+      className={`${cn(buttonVariants({ variant, size, className }))} focus-visible:border-none focus-visible:outline-none focus-visible:ring-0! cursor-pointer`}
       {...props}
     />
   )

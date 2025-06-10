@@ -22,70 +22,87 @@ import {
   PaginationPrevious,
 } from "@/components/ui/pagination"
 
-import { IoChevronUp } from "react-icons/io5";
 import { IoChevronDown } from "react-icons/io5";
 import { IoSearch } from "react-icons/io5";
 import { LuDot } from "react-icons/lu";
 
 export default function PostsManagementPage() {
-  const [isQuickSearchEnabled, setIsQuickSearchEnabled] = useState<boolean>(false);
   const [isSearchEnabled, setIsSearchEnabled] = useState<boolean>(false);
   const [searchFilter, setSearchFilter] = useState<string>("title");
 
   return (
     <div className="mt-3">
-      <h1 className="text-xl font-semibold">Post Management <span className="text-[16px] font-medium">35</span></h1>
-      <div className="flex justify-between">
+      <h1 className="text-xl font-semibold mb-2">
+        Post Management 
+        <span className="text-[16px] font-medium ml-2">35</span>
+      </h1>
+      <div className="flex justify-between items-center border-1 border-gray-200 py-1 px-4">
         {!isSearchEnabled ? 
           <>
+            <Checkbox className="data-[state=checked]:bg-black data-[state=checked]:text-white size-[20px]"/>
             <div>
-              <Checkbox />
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant={"ghost"} onClick={() => setIsQuickSearchEnabled(!isQuickSearchEnabled)}>
-                    Quick Search
-                    {isQuickSearchEnabled ? <IoChevronUp /> : <IoChevronDown />}
+                  <Button variant={"ghost"} className="focus-visible:border-0">
+                    QuickSearch
+                    <IoChevronDown />
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent >
+                <DropdownMenuContent className="bg-white">
                   <DropdownMenuItem>
                     View all posts
                   </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuLabel>Status view</DropdownMenuLabel>
+                  <DropdownMenuSeparator className="bg-black"/>
+                  <DropdownMenuLabel className="text-gray-400">Status view</DropdownMenuLabel>
                   <DropdownMenuItem>
-                    all
+                    <span className="ml-3">
+                      all
+                    </span>
                   </DropdownMenuItem>
                   <DropdownMenuItem>
-                    public
+                    <span className="ml-3">
+                      public
+                    </span>
                   </DropdownMenuItem>
                   <DropdownMenuItem>
-                    private
+                    <span className="ml-3">
+                      private
+                    </span>
                   </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuLabel>Category view</DropdownMenuLabel>
+                  <DropdownMenuSeparator className="bg-black" />
+                  <DropdownMenuLabel className="text-gray-400">Category view</DropdownMenuLabel>
                   <DropdownMenuItem>
-                    view all categories
-                  </DropdownMenuItem>
-                  <DropdownMenuItem>
-                    no category
-                  </DropdownMenuItem>
-                  <DropdownMenuItem>
-                    IT
+                    <span className="ml-3">
+                      view all categories
+                    </span>
                   </DropdownMenuItem>
                   <DropdownMenuItem>
-                    ㄴ HTML
+                    <span className="ml-3">
+                      no category
+                    </span>
                   </DropdownMenuItem>
                   <DropdownMenuItem>
-                    Write
+                    <span className="ml-3">
+                      IT
+                    </span>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem>
+                    <span className="ml-3">
+                      ㄴ HTML
+                    </span>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem>
+                    <span className="ml-3">
+                      Write
+                    </span>
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
+              <Button variant={"ghost"} onClick={() => setIsSearchEnabled(!isSearchEnabled)}>
+                Search
+                <IoSearch />
+              </Button>
             </div>
-            <Button variant={"ghost"} onClick={() => setIsSearchEnabled(!isSearchEnabled)}>
-              Search
-              <IoSearch />
-            </Button>
           </>
         : 
           <>
