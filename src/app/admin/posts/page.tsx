@@ -35,7 +35,7 @@ export default function PostsManagementPage() {
 
   return (
     <div className="mt-3">
-      <h1 className="text-xl font-semibold mb-2">
+      <h1 className="text-xl font-bold mb-2">
         Post Management 
         <span className="text-[16px] font-medium ml-2">35</span>
       </h1>
