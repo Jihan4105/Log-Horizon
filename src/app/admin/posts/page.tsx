@@ -25,6 +25,8 @@ import {
 import { IoChevronDown } from "react-icons/io5";
 import { IoSearch } from "react-icons/io5";
 import { LuDot } from "react-icons/lu";
+import { RiEditLine } from "react-icons/ri";
+import { RiDeleteBin6Line } from "react-icons/ri";
 
 export default function PostsManagementPage() {
   const [isSearchEnabled, setIsSearchEnabled] = useState<boolean>(false);
@@ -160,19 +162,23 @@ export default function PostsManagementPage() {
               </div>
             </div>
           </div>
-          <div className="sm:justify-self-end group-hover:flex group-hover:visible">
+          <div className="">
             <div className="hidden lg:flex gap-2">
-              <Button variant={"destructive"}>edit</Button>
-              <Button variant={"outline"}>delete</Button>
+              <Button variant={"outline"} size={"icon"} className="rounded-none border-[#d2d2d2]">
+                <RiEditLine />
+              </Button>
+              <Button variant={"outline"} size={"icon"}className="rounded-none border-[#d2d2d2]">
+                <RiDeleteBin6Line />
+              </Button>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild className="border-[#d2d2d2]">
-                  <Button variant="outline" className="text-gray-600">Public</Button>
+                  <Button variant="outline" className="rounded-none">Public</Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent className="min-w-[80px] border-[#d2d2d2] bg-white text-gray-600" side="right">
+                <DropdownMenuContent className="min-w-[80px] border-[#d2d2d2] bg-white text-gray-600">
                   <DropdownMenuItem
                     className="hover:bg-gray-100"
                   >
-                    Publice
+                    Public
                   </DropdownMenuItem>
                   <DropdownMenuItem
                     className="hover:bg-gray-100"
@@ -185,20 +191,20 @@ export default function PostsManagementPage() {
             <div className="lg:hidden">
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className="ml-4 ">
+                  <Button variant="ghost" className="ml-4 rounded-full bg-[#F0F8FF]">
                     <span className="sr-only">Actions</span>
                     ⋮
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="min-w-[120px] border-[#d2d2d2] bg-white text-gray-600">
                   <DropdownMenuItem>
-                    edit
+                    <RiEditLine /> Edit
                   </DropdownMenuItem>
                   <DropdownMenuItem>
-                    delete
+                    <RiDeleteBin6Line /> delete
                   </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuLabel>Status</DropdownMenuLabel>
+                  <DropdownMenuSeparator className="bg-[#d2d2d2]"/>
+                  <DropdownMenuLabel className="text-gray-400">Status</DropdownMenuLabel>
                   <DropdownMenuItem>
                     Public
                   </DropdownMenuItem>
@@ -222,19 +228,23 @@ export default function PostsManagementPage() {
               </div>
             </div>
           </div>
-          <div className="sm:justify-self-end group-hover:flex group-hover:visible">
+          <div className="">
             <div className="hidden lg:flex gap-2">
-              <Button variant={"destructive"}>edit</Button>
-              <Button variant={"outline"}>delete</Button>
+              <Button variant={"outline"} size={"icon"} className="rounded-none border-[#d2d2d2]">
+                <RiEditLine />
+              </Button>
+              <Button variant={"outline"} size={"icon"}className="rounded-none border-[#d2d2d2]">
+                <RiDeleteBin6Line />
+              </Button>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild className="border-[#d2d2d2]">
-                  <Button variant="outline" className="text-gray-600">Public</Button>
+                  <Button variant="outline" className="rounded-none">Public</Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent className="min-w-[80px] border-[#d2d2d2] bg-white text-gray-600" side="right">
+                <DropdownMenuContent className="min-w-[80px] border-[#d2d2d2] bg-white text-gray-600">
                   <DropdownMenuItem
                     className="hover:bg-gray-100"
                   >
-                    Publice
+                    Public
                   </DropdownMenuItem>
                   <DropdownMenuItem
                     className="hover:bg-gray-100"
@@ -247,20 +257,20 @@ export default function PostsManagementPage() {
             <div className="lg:hidden">
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className="ml-4 ">
+                  <Button variant="ghost" className="ml-4 rounded-full bg-[#F0F8FF]">
                     <span className="sr-only">Actions</span>
                     ⋮
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="min-w-[120px] border-[#d2d2d2] bg-white text-gray-600">
                   <DropdownMenuItem>
-                    edit
+                    <RiEditLine /> Edit
                   </DropdownMenuItem>
                   <DropdownMenuItem>
-                    delete
+                    <RiDeleteBin6Line /> delete
                   </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuLabel>Status</DropdownMenuLabel>
+                  <DropdownMenuSeparator className="bg-[#d2d2d2]"/>
+                  <DropdownMenuLabel className="text-gray-400">Status</DropdownMenuLabel>
                   <DropdownMenuItem>
                     Public
                   </DropdownMenuItem>
@@ -284,19 +294,23 @@ export default function PostsManagementPage() {
               </div>
             </div>
           </div>
-          <div className="sm:justify-self-end group-hover:flex group-hover:visible">
+          <div className="">
             <div className="hidden lg:flex gap-2">
-              <Button variant={"destructive"}>edit</Button>
-              <Button variant={"outline"}>delete</Button>
+              <Button variant={"outline"} size={"icon"} className="rounded-none border-[#d2d2d2]">
+                <RiEditLine />
+              </Button>
+              <Button variant={"outline"} size={"icon"}className="rounded-none border-[#d2d2d2]">
+                <RiDeleteBin6Line />
+              </Button>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild className="border-[#d2d2d2]">
-                  <Button variant="outline" className="text-gray-600">Public</Button>
+                  <Button variant="outline" className="rounded-none">Public</Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent className="min-w-[80px] border-[#d2d2d2] bg-white text-gray-600" side="right">
+                <DropdownMenuContent className="min-w-[80px] border-[#d2d2d2] bg-white text-gray-600">
                   <DropdownMenuItem
                     className="hover:bg-gray-100"
                   >
-                    Publice
+                    Public
                   </DropdownMenuItem>
                   <DropdownMenuItem
                     className="hover:bg-gray-100"
@@ -309,20 +323,20 @@ export default function PostsManagementPage() {
             <div className="lg:hidden">
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className="ml-4 ">
+                  <Button variant="ghost" className="ml-4 rounded-full bg-[#F0F8FF]">
                     <span className="sr-only">Actions</span>
                     ⋮
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="min-w-[120px] border-[#d2d2d2] bg-white text-gray-600">
                   <DropdownMenuItem>
-                    edit
+                    <RiEditLine /> Edit
                   </DropdownMenuItem>
                   <DropdownMenuItem>
-                    delete
+                    <RiDeleteBin6Line /> delete
                   </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuLabel>Status</DropdownMenuLabel>
+                  <DropdownMenuSeparator className="bg-[#d2d2d2]"/>
+                  <DropdownMenuLabel className="text-gray-400">Status</DropdownMenuLabel>
                   <DropdownMenuItem>
                     Public
                   </DropdownMenuItem>
@@ -346,19 +360,23 @@ export default function PostsManagementPage() {
               </div>
             </div>
           </div>
-          <div className="sm:justify-self-end group-hover:flex group-hover:visible">
+          <div className="">
             <div className="hidden lg:flex gap-2">
-              <Button variant={"destructive"}>edit</Button>
-              <Button variant={"outline"}>delete</Button>
+              <Button variant={"outline"} size={"icon"} className="rounded-none border-[#d2d2d2]">
+                <RiEditLine />
+              </Button>
+              <Button variant={"outline"} size={"icon"}className="rounded-none border-[#d2d2d2]">
+                <RiDeleteBin6Line />
+              </Button>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild className="border-[#d2d2d2]">
-                  <Button variant="outline" className="text-gray-600">Public</Button>
+                  <Button variant="outline" className="rounded-none">Public</Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent className="min-w-[80px] border-[#d2d2d2] bg-white text-gray-600" side="right">
+                <DropdownMenuContent className="min-w-[80px] border-[#d2d2d2] bg-white text-gray-600">
                   <DropdownMenuItem
                     className="hover:bg-gray-100"
                   >
-                    Publice
+                    Public
                   </DropdownMenuItem>
                   <DropdownMenuItem
                     className="hover:bg-gray-100"
@@ -371,20 +389,20 @@ export default function PostsManagementPage() {
             <div className="lg:hidden">
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className="ml-4 ">
+                  <Button variant="ghost" className="ml-4 rounded-full bg-[#F0F8FF]">
                     <span className="sr-only">Actions</span>
                     ⋮
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="min-w-[120px] border-[#d2d2d2] bg-white text-gray-600">
                   <DropdownMenuItem>
-                    edit
+                    <RiEditLine /> Edit
                   </DropdownMenuItem>
                   <DropdownMenuItem>
-                    delete
+                    <RiDeleteBin6Line /> delete
                   </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuLabel>Status</DropdownMenuLabel>
+                  <DropdownMenuSeparator className="bg-[#d2d2d2]"/>
+                  <DropdownMenuLabel className="text-gray-400">Status</DropdownMenuLabel>
                   <DropdownMenuItem>
                     Public
                   </DropdownMenuItem>
@@ -408,19 +426,23 @@ export default function PostsManagementPage() {
               </div>
             </div>
           </div>
-          <div className="sm:justify-self-end group-hover:flex group-hover:visible">
+          <div className="">
             <div className="hidden lg:flex gap-2">
-              <Button variant={"destructive"}>edit</Button>
-              <Button variant={"outline"}>delete</Button>
+              <Button variant={"outline"} size={"icon"} className="rounded-none border-[#d2d2d2]">
+                <RiEditLine />
+              </Button>
+              <Button variant={"outline"} size={"icon"}className="rounded-none border-[#d2d2d2]">
+                <RiDeleteBin6Line />
+              </Button>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild className="border-[#d2d2d2]">
-                  <Button variant="outline" className="text-gray-600">Public</Button>
+                  <Button variant="outline" className="rounded-none">Public</Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent className="min-w-[80px] border-[#d2d2d2] bg-white text-gray-600" side="right">
+                <DropdownMenuContent className="min-w-[80px] border-[#d2d2d2] bg-white text-gray-600">
                   <DropdownMenuItem
                     className="hover:bg-gray-100"
                   >
-                    Publice
+                    Public
                   </DropdownMenuItem>
                   <DropdownMenuItem
                     className="hover:bg-gray-100"
@@ -433,20 +455,20 @@ export default function PostsManagementPage() {
             <div className="lg:hidden">
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className="ml-4 ">
+                  <Button variant="ghost" className="ml-4 rounded-full bg-[#F0F8FF]">
                     <span className="sr-only">Actions</span>
                     ⋮
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="min-w-[120px] border-[#d2d2d2] bg-white text-gray-600">
                   <DropdownMenuItem>
-                    edit
+                    <RiEditLine /> Edit
                   </DropdownMenuItem>
                   <DropdownMenuItem>
-                    delete
+                    <RiDeleteBin6Line /> delete
                   </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuLabel>Status</DropdownMenuLabel>
+                  <DropdownMenuSeparator className="bg-[#d2d2d2]"/>
+                  <DropdownMenuLabel className="text-gray-400">Status</DropdownMenuLabel>
                   <DropdownMenuItem>
                     Public
                   </DropdownMenuItem>
@@ -459,7 +481,7 @@ export default function PostsManagementPage() {
           </div>
         </li>
       </ul>
-      <Pagination>
+      <Pagination className="mt-5">
         <PaginationContent>
           <PaginationItem>
             <PaginationPrevious href="#" />
