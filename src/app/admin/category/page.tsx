@@ -4,12 +4,32 @@ import { startTransition, useOptimistic } from "react";
 import { DragDropContext, Draggable, Droppable } from "@hello-pangea/dnd";
 import { GripVertical } from "lucide-react";
 
+// import { useState } from "react";
+// import {DndContext} from "@dnd-kit/core";
+
+// import Draggable from "@/components/Draggable";
+// import Droppable from "@/components/Droppable";
+
 const categories = [
-  { id: "1", name: "IT" },
-  { id: "2", name: "HTML" },
-  { id: "3", name: "GYM" },
-  { id: "4", name: "Book" },
-  { id: "5", name: "Corps" },
+  { 
+    id: "q123", 
+    name: "IT",
+    items: [
+      { id: "avc", name: "HTML" },
+      { id: "gvd", name: "CSS" },
+    ]
+  },
+  { id: "hde", name: "GYM", items: [] },
+  { 
+    id: "fff", 
+    name: "Book",
+    itmes: [
+      { id: "123", name: "Book 1" },
+      { id: "456", name: "Book 2" },
+      { id: "789", name: "Book 3" }
+    ] 
+  },
+  { id: "62f", name: "Corps", items: [] },
 ];
 
 export default function CategoryManagementPage() {
@@ -90,3 +110,25 @@ export default function CategoryManagementPage() {
     </div>
   );
 }
+
+// export default function CategoryManagementPage() {
+//   const [isDropped, setIsDropped] = useState(false);
+//   const draggableMarkup = (
+//     <Draggable>Drag me</Draggable>
+//   );
+  
+//   return (
+//     <DndContext onDragEnd={handleDragEnd}>
+//       {!isDropped ? draggableMarkup : null}
+//       <Droppable>
+//         {isDropped ? draggableMarkup : 'Drop here'}
+//       </Droppable>
+//     </DndContext>
+//   );
+  
+//   function handleDragEnd(event) {
+//     if (event.over && event.over.id === 'droppable') {
+//       setIsDropped(true);
+//     }
+//   }
+// }
