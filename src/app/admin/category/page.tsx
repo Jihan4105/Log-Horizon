@@ -1,13 +1,19 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import { useState, forwardRef } from 'react';
 import {
   SimpleTreeItemWrapper,
   TreeItemComponentProps,
   TreeItems,
-  SortableTree
+  SortableTreeProps
 } from 'dnd-kit-sortable-tree';
 import { MinimalTreeItemData } from '@/lib/types';
+const SortableTree = dynamic<SortableTreeProps>(
+  () => import('dnd-kit-sortable-tree').then(mod => ({ default: mod.SortableTree })),
+  { ssr: false }
+)
+
 
 /*
  * Here's the component that will render a single row of your tree
@@ -18,13 +24,15 @@ const TreeItem = forwardRef<
 >((props, ref) => {
   return (
     <SimpleTreeItemWrapper {...props} ref={ref}>
-      {props.item.children?.length !== 0 && ( <div className='mr-1 text-xs font-semibold'>({props.item.children!.length})</div>)}
+      {/* {props.item.children && props.item.children.length} */}
+      {props.item.children && props.item.children.length !== 0 && (
+        <div className='mr-1 text-xs font-semibold'>({props.item.children!.length})</div>
+      )}
       <div>{props.item.value}</div>
     </SimpleTreeItemWrapper>
   );
 });
 TreeItem.displayName = "TreeItem";
-
 
 
 /*
