@@ -14,30 +14,32 @@ const SortableTree = dynamic<SortableTreeProps>(
   { ssr: false }
 )
 
+import { GoPlus } from "react-icons/go";
 
-/*
- * Here's the component that will render a single row of your tree
- */
+
 const TreeItem = forwardRef<
   HTMLDivElement,
   TreeItemComponentProps<MinimalTreeItemData>
 >((props, ref) => {
   return (
-    <SimpleTreeItemWrapper {...props} ref={ref}>
-      {/* {props.item.children && props.item.children.length} */}
-      {props.item.children && props.item.children.length !== 0 && (
-        <div className='mr-1 text-xs font-semibold'>({props.item.children!.length})</div>
-      )}
-      <div>{props.item.value}</div>
+    <SimpleTreeItemWrapper {...props} ref={ref} className="*:bg-white">
+      <div className="flex items-center justify-between w-full">
+        <div className="flex items-center">
+          {props.item.children && props.item.children.length !== 0 && (
+            <div className='mr-1 text-xs font-semibold'>({props.item.children!.length})</div>
+          )}
+          <div>{props.item.value}</div>
+        </div>
+        <div>
+          Yes
+        </div>
+      </div>
     </SimpleTreeItemWrapper>
   );
 });
 TreeItem.displayName = "TreeItem";
 
 
-/*
- * Configure the tree data.
- */
 const initialViableMinimalData: TreeItems<MinimalTreeItemData> = [
   {
     id: 1,
@@ -58,12 +60,16 @@ export default function CategoryManagementPage() {
     <>
       <h1 className="text-2xl font-bold">Category Management</h1>
       <p className='mb-6'>You can sort your categories with Drag n Drop</p>
-      <div className='border-[#d2d2d2] p-4 border-1'>
+      <div className='p-4 bg-gray-100'>
         <SortableTree
           items={items}
           onItemsChanged={setItems}
           TreeItemComponent={TreeItem}
         />
+        <div className="border-dotted border-1 mt-2 p-2.5 flex items-center cursor-pointer ">
+          <GoPlus className="mr-0.5"/>
+          Add New Category
+        </div>
       </div>
       
     </>
