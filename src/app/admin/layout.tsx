@@ -75,7 +75,7 @@ export default function AdminLayout ({
             <span className="text-[20px]">Comments</span>
           </div>
           <div className="flex flex-col gap-3 pl-6">
-            <span><Link href="/admin/comment" onClick={() => { switchSidebarStatus();}}>Comments Management</Link></span>
+            <span><Link href="/admin/comments" onClick={() => { switchSidebarStatus();}}>Comments Management</Link></span>
           </div>
           <div className="flex items-center gap-2">
             <LuUserRoundCog className="size-[30px]"/>
@@ -102,7 +102,7 @@ export default function AdminLayout ({
         }}
       />
   
-      <div className="flex-col p-5 md:p-10 w-full h-full md:ml-[304px]">
+      <div className="flex-col p-5 md:p-10 w-full h-full md:ml-[304px] xl:px-[15%]">
         {/* Toggle Button */}
         <button 
           className="md:hidden p-2 text-[20px] top-0 left-0 relative transition-colors duration-300 ease-in-out hover:bg-gray-100 rounded-[5px] cursor-pointer" 

@@ -36,7 +36,7 @@ export default function PostsManagementPage() {
   return (
     <div className="mt-3">
       <h1 className="text-xl font-bold mb-2">
-        Post Management 
+        Posts Management 
         <span className="text-[16px] font-medium ml-2">35</span>
       </h1>
       <div className="flex justify-between items-center border-1 border-gray-200 py-1 px-4">
@@ -162,7 +162,7 @@ export default function PostsManagementPage() {
               </div>
             </div>
           </div>
-          <div className="">
+          <div className="group-hover:block hidden">
             <div className="hidden lg:flex gap-2">
               <Button variant={"outline"} size={"icon"} className="rounded-none border-[#d2d2d2]">
                 <RiEditLine />
@@ -228,7 +228,7 @@ export default function PostsManagementPage() {
               </div>
             </div>
           </div>
-          <div className="">
+          <div className="group-hover:block hidden">
             <div className="hidden lg:flex gap-2">
               <Button variant={"outline"} size={"icon"} className="rounded-none border-[#d2d2d2]">
                 <RiEditLine />
@@ -294,7 +294,7 @@ export default function PostsManagementPage() {
               </div>
             </div>
           </div>
-          <div className="">
+          <div className="group-hover:block hidden">
             <div className="hidden lg:flex gap-2">
               <Button variant={"outline"} size={"icon"} className="rounded-none border-[#d2d2d2]">
                 <RiEditLine />
@@ -360,7 +360,7 @@ export default function PostsManagementPage() {
               </div>
             </div>
           </div>
-          <div className="">
+          <div className="group-hover:block hidden">
             <div className="hidden lg:flex gap-2">
               <Button variant={"outline"} size={"icon"} className="rounded-none border-[#d2d2d2]">
                 <RiEditLine />
@@ -426,7 +426,7 @@ export default function PostsManagementPage() {
               </div>
             </div>
           </div>
-          <div className="">
+          <div className="group-hover:block hidden">
             <div className="hidden lg:flex gap-2">
               <Button variant={"outline"} size={"icon"} className="rounded-none border-[#d2d2d2]">
                 <RiEditLine />
