@@ -75,7 +75,7 @@ export default function AdminLayout ({
             <span className="text-[20px]">Comments</span>
           </div>
           <div className="flex flex-col gap-3 pl-6">
-            <span><Link href="/admin/comment" onClick={() => { switchSidebarStatus();}}>Post Management</Link></span>
+            <span><Link href="/admin/comment" onClick={() => { switchSidebarStatus();}}>Comments Management</Link></span>
           </div>
           <div className="flex items-center gap-2">
             <LuUserRoundCog className="size-[30px]"/>
