@@ -12,7 +12,7 @@ import { HiMiniBars3 } from "react-icons/hi2";
 import { IoClipboardOutline } from "react-icons/io5";
 import { IoChatbubbleEllipsesOutline } from "react-icons/io5";
 import { LuUserRoundCog } from "react-icons/lu";
-
+import { IoIosLogOut } from "react-icons/io";
 
 export default function AdminLayout ({
   children,
@@ -55,36 +55,48 @@ export default function AdminLayout ({
           New Post
         </Link>
 
-        <div className="flex flex-col gap-5">
-          <div className="flex items-center mt-10">
-            <Link href="/dashboard" className="flex gap-2 items-center" onClick={() => { switchSidebarStatus();}}>
-              <IoHomeOutline className="size-[30px]"/>
-              <span className="text-[20px]">Blog Home</span>
-            </Link>
-          </div>
-          <div className="flex items-center gap-2">
+        <div className="flex flex-col">
+          <Link href="/dashboard" className="flex gap-2 items-center mt-5 hover:bg-gray-100 rounded-[5px] p-2" onClick={() => { switchSidebarStatus();}}>
+            <IoHomeOutline className="size-[30px]"/>
+            <span className="text-[20px]">Blog Home</span>
+          </Link>
+          <div className="flex items-center gap-2 p-2">
             <IoClipboardOutline className="size-[30px]"/>
             <span className="text-[20px]">Contents</span>
           </div>
-          <div className="flex flex-col gap-3 pl-6">
-            <span><Link href="/admin/posts" onClick={() => { switchSidebarStatus();}}>Post Management</Link></span>
-            <span><Link href="/admin/category" onClick={() => { switchSidebarStatus();}}>Category Management</Link></span>
+          <div className="flex flex-col">
+            <Link className="hover:bg-gray-100 p-2 pl-8 rounded-[5px]" href="/admin/posts" onClick={() => { switchSidebarStatus();}}>
+              Posts Management
+            </Link>
+            <Link className="hover:bg-gray-100 p-2 pl-8 rounded-[5px]" href="/admin/category" onClick={() => { switchSidebarStatus();}}>
+              Category Management
+            </Link>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 p-2">
             <IoChatbubbleEllipsesOutline className="size-[30px]"/>
             <span className="text-[20px]">Comments</span>
           </div>
-          <div className="flex flex-col gap-3 pl-6">
-            <span><Link href="/admin/comments" onClick={() => { switchSidebarStatus();}}>Comments Management</Link></span>
+          <div className="flex flex-col">
+            <Link href="/admin/comments" className="hover:bg-gray-100 p-2 pl-8 rounded-[5px]" onClick={() => { switchSidebarStatus();}}>
+              Comments Management
+            </Link>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 p-2">
             <LuUserRoundCog className="size-[30px]"/>
             <span className="text-[20px]">User</span>
           </div>
-          <div className="flex flex-col gap-3 pl-6">
-            <span><Link href="/admin/user" onClick={() => { switchSidebarStatus();}}>User Management</Link></span>
+          <div className="flex flex-col">
+            <Link href="/admin/user" className="hover:bg-gray-100 p-2 pl-8 rounded-[5px]" onClick={() => { switchSidebarStatus();}}>
+              User Management
+            </Link>
+          </div>
+          <div className="h-[1px] my-5 bg-gray-300"/>
+          <div className="flex items-center gap-2 p-2 hover:bg-gray-100 rounded-[5px] cursor-pointer">
+            <IoIosLogOut className="size-[30px]" />
+            <span className="text-[20px]">Logout</span>
           </div>
         </div>
+
       </aside>
 
       {/* Overlay */}
@@ -102,7 +114,7 @@ export default function AdminLayout ({
         }}
       />
   
-      <div className="flex-col p-5 md:p-10 w-full h-full md:ml-[304px] xl:px-[15%]">
+      <div className="flex-col p-5 md:p-10 w-full h-full md:ml-[304px]">
         {/* Toggle Button */}
         <button 
           className="md:hidden p-2 text-[20px] top-0 left-0 relative transition-colors duration-300 ease-in-out hover:bg-gray-100 rounded-[5px] cursor-pointer" 
