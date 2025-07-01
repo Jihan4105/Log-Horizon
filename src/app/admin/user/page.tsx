@@ -22,6 +22,9 @@ import {
 import { IoChevronDown } from "react-icons/io5";
 import { UserData } from "@/lib/types";
 
+import { columns } from "./columns";
+import { DataTable } from "./data-table";
+
 const tableDatas: UserData[] = [
   {
     userid: "user_001",
@@ -80,8 +83,6 @@ const tableDatas: UserData[] = [
   }
 ];
 
-
-
 export default function UserManagementPage() {
   const [searchFilter, setSearchFilter] = useState<string>("username");
   const [searchQuery, setSearchQuery] = useState<string>("");
@@ -89,7 +90,7 @@ export default function UserManagementPage() {
   return (
     <div className="mt-3">
       <h1 className="text-xl font-bold mb-2">User Management</h1>
-      <div className="flex items-center p-1 border border-gray-200">
+      <div className="flex items-center p-1 border border-gray-200 mb-6">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" className=" mr-2">{searchFilter} <IoChevronDown /></Button>
@@ -120,43 +121,11 @@ export default function UserManagementPage() {
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
         />
-        <Table>
-          <TableHeader>
-              <TableRow>
-                <TableHead>
-                  name
-                </TableHead>
-              </TableRow>
-          </TableHeader>
-          <TableBody>
-            {table.getRowModel().rows?.length ? (
-              table.getRowModel().rows.map((row) => (
-                <TableRow
-                  key={row.id}
-                  data-state={row.getIsSelected() && "selected"}
-                >
-                  {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id}>
-                      {flexRender(
-                        cell.column.columnDef.cell,
-                        cell.getContext()
-                      )}
-                    </TableCell>
-                  ))}
-                </TableRow>
-              ))
-            ) : (
-              <TableRow>
-                <TableCell
-                  className="h-24 text-center"
-                >
-                  No results.
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
       </div>
+      <DataTable
+        columns={columns}
+        data={tableDatas}
+      /> 
     </div>
   )
 }
