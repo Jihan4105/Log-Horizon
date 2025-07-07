@@ -4,6 +4,7 @@ import clsx from "clsx";
 import { useState } from "react";
 import { homemadeApple } from "@/lib/font";
 import Link from "next/link";
+import { LogoutLink } from "@kinde-oss/kinde-auth-nextjs/components";
 
 // Icons
 import { IoHomeOutline } from "react-icons/io5";
@@ -91,10 +92,10 @@ export default function AdminLayout ({
             </Link>
           </div>
           <div className="h-[1px] my-5 bg-gray-300"/>
-          <div className="flex items-center gap-2 p-2 hover:bg-gray-100 rounded-[5px] cursor-pointer">
+          <LogoutLink className="flex items-center gap-2 p-2 hover:bg-gray-100 rounded-[5px] cursor-pointer">
             <IoIosLogOut className="size-[30px]" />
             <span className="text-[20px]">Logout</span>
-          </div>
+          </LogoutLink>
         </div>
 
       </aside>
