@@ -1,5 +1,8 @@
 export type MinimalTreeItemData = {
+  id: number;
   value: string;
+  parentId: number | null;
+  children?: MinimalTreeItemData[];
 };
 
 export type UserData = {

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, forwardRef, useEffect, useRef } from 'react';
+import clsx from 'clsx';
 import {
   SimpleTreeItemWrapper,
   TreeItemComponentProps,
@@ -47,8 +48,12 @@ const TreeItem = forwardRef<
 TreeItem.displayName = "TreeItem";
 
 export default function CategoryManagementPage() {
-  const [items, setItems] = useState(null);
-  const initialTree = useRef<MinimalTreeItemData[]>(null);
+  const initialTree = useRef<MinimalTreeItemData[]>([]);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const nextId = useRef<number>(0);
+  const [items, setItems] = useState<MinimalTreeItemData[]>([]);
+  const [isAdding, setIsAdding] = useState<boolean>(false);
+  const [newCategory, setNewCategory] = useState<string>("")
 
   useEffect(() => {
     async function fetchData () {
@@ -56,6 +61,7 @@ export default function CategoryManagementPage() {
         const res = await fetch("/api/category");
         const data = await res.json();
         initialTree.current = data;
+        nextId.current = data.length
         setItems(data);
       } catch (error) {
         console.error("Failed to fetch category items:", error);
@@ -64,12 +70,18 @@ export default function CategoryManagementPage() {
     fetchData();
   }, [])
 
+  useEffect(() => {
+    if(isAdding && inputRef.current) {
+      inputRef.current.focus();
+    }
+  }, [isAdding])
+
   return (
     <>
       <h1 className="text-2xl font-bold">Category Management</h1>
       <p className='mb-6'>You can sort your categories with Drag n Drop</p>
       <div className='p-4 bg-gray-100 mb-4'>
-        {items ? 
+        {items.length > 0 ? 
           <SortableTree
           items={items}
           onItemsChanged={setItems}
@@ -78,7 +90,62 @@ export default function CategoryManagementPage() {
           :
           <Spinner />
         }
-        <div className="border-dotted border-1 mt-2 p-2.5 flex items-center cursor-pointer ">
+        <div className={clsx(
+          "items-center justify-between w-full bg-white border-1 border-[#d2d2d2] p-2",
+          {
+            "flex": isAdding,
+            "hidden": !isAdding
+          }
+        )}>
+          <div className="flex items-center">
+            <input
+              ref={inputRef}
+              id='newCategory'
+              type='text'
+              name='newCategory'
+              className='outline-none border-1 border-[#d2d2d2] rounded-none'
+              value={newCategory}
+              onChange={(e) => setNewCategory(e.target.value)}
+            />
+          </div>
+          <div className="flex gap-2">
+            <Button 
+              variant={"outline"} 
+              size={"sm"} 
+              className="rounded-none border-[#d2d2d2] h-[24px] text-[12px]"
+              onClick={() => {setIsAdding(false)}}
+            >
+              Cancel
+            </Button>
+            <Button 
+              variant={"outline"} 
+              size={"sm"} 
+              className={clsx(
+                "rounded-none border-[#d2d2d2] h-[24px] text-[12px]", 
+                {
+                  "cursor-not-allowed!": !newCategory.trim() || !items
+                }
+              )}
+              disabled={!newCategory.trim() || !items}
+              onClick={() => {
+                setItems([
+                  ...items,
+                  {
+                    id: nextId.current++,
+                    value: newCategory.trim(),
+                    parentId: null,
+                  }
+                ])
+              }}
+            >
+              Submit
+            </Button>
+          </div>
+        </div>
+        <div 
+          className="border-dotted border-1 mt-2 p-2.5 flex items-center cursor-pointer "
+          onClick={() => {setIsAdding(true)}}
+        >
           <GoPlus className="mr-0.5"/>
           Add New Category
         </div>
@@ -96,7 +163,7 @@ export default function CategoryManagementPage() {
   );
 }
 
-async function onSubmit(items) {
+async function onSubmit(items: MinimalTreeItemData[]) {
   let dbItems = []
   for (const item of items) {
     dbItems.push({

@@ -70,7 +70,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ status: 200, message: "POST request received" });
   } catch(error) {
     console.error("Error inserting/updating categories:", error);
-    return NextResponse.json({ status:  error: "Failed to update categories" }, { status: 500 });
+    return NextResponse.json({ status: 500,  error: "Failed to update categories" }, { status: 500 });
   }
 
 }
