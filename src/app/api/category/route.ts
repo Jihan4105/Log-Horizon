@@ -1,6 +1,9 @@
+import { NextResponse, NextRequest } from "next/server";
 import { db } from "@/db";
+import { sql } from "drizzle-orm";
+import { categoryTree } from "@/db/schema";
 
-export async function getCategoryItems() {
+export async function GET() {
   const sql = `
     WITH RECURSIVE tree AS (
       SELECT
@@ -46,7 +49,28 @@ export async function getCategoryItems() {
   const result = await db.execute(sql);
 
   const categoryTree = result.rows.map(row => row.tree_item)
+  
+  return NextResponse.json(categoryTree);
+}
 
-  console.log(JSON.stringify(categoryTree, null, 2));
-  return categoryTree;
+export async function POST(req: NextRequest) {
+  const newItems = await req.json();
+  console.log(newItems)
+
+  try {
+    await db.insert(categoryTree)
+      .values(newItems)
+      .onConflictDoUpdate({
+        target: categoryTree.id,
+        set: {
+          value: sql`excluded.value`,
+          parentId: sql`excluded.parent_id`
+        }
+      })
+    return NextResponse.json({ status: 200, message: "POST request received" });
+  } catch(error) {
+    console.error("Error inserting/updating categories:", error);
+    return NextResponse.json({ status:  error: "Failed to update categories" }, { status: 500 });
+  }
+
 }

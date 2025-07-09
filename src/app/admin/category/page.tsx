@@ -1,18 +1,12 @@
 "use client";
 
-import dynamic from "next/dynamic";
-import { useState, forwardRef, useEffect } from 'react';
+import { useState, forwardRef, useEffect, useRef } from 'react';
 import {
   SimpleTreeItemWrapper,
   TreeItemComponentProps,
-  TreeItems,
-  SortableTreeProps
+  SortableTree
 } from 'dnd-kit-sortable-tree';
 import { MinimalTreeItemData } from '@/lib/types';
-const SortableTree = dynamic<SortableTreeProps>(
-  () => import('dnd-kit-sortable-tree').then(mod => ({ default: mod.SortableTree })),
-  { ssr: false }
-)
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 
@@ -52,26 +46,22 @@ const TreeItem = forwardRef<
 });
 TreeItem.displayName = "TreeItem";
 
-
-const initialViableMinimalData: TreeItems<MinimalTreeItemData> = [
-  {
-    id: 1,
-    value: 'IT',
-    children: [
-      { id: 4, value: 'HTML' },
-      { id: 5, value: 'SCSS' },
-    ],
-  },
-  { id: 2, value: 'Writes', children: [{ id: 6, value: 'Novel' }] },
-  { id: 3, value: 'News' },
-];
-
 export default function CategoryManagementPage() {
-  const [items, setItems] = useState(initialViableMinimalData);
-  const [isClinet, setIsClient] = useState(false)
+  const [items, setItems] = useState(null);
+  const initialTree = useRef<MinimalTreeItemData[]>(null);
 
   useEffect(() => {
-    setIsClient(true)
+    async function fetchData () {
+      try {
+        const res = await fetch("/api/category");
+        const data = await res.json();
+        initialTree.current = data;
+        setItems(data);
+      } catch (error) {
+        console.error("Failed to fetch category items:", error);
+      }
+    }
+    fetchData();
   }, [])
 
   return (
@@ -79,7 +69,7 @@ export default function CategoryManagementPage() {
       <h1 className="text-2xl font-bold">Category Management</h1>
       <p className='mb-6'>You can sort your categories with Drag n Drop</p>
       <div className='p-4 bg-gray-100 mb-4'>
-        {isClinet ? 
+        {items ? 
           <SortableTree
           items={items}
           onItemsChanged={setItems}
@@ -94,9 +84,50 @@ export default function CategoryManagementPage() {
         </div>
       </div>
       <div className="w-full flex justify-end">
-        <Button className="border border-gray-300 rounded-none" disabled>Submit</Button>
+        <Button 
+          className="border border-gray-300 rounded-none" 
+          onClick={() => {onSubmit(items!)}}
+          disabled={JSON.stringify(items) === JSON.stringify(initialTree.current)}
+        >
+          Submit
+        </Button>
       </div>
     </>
   );
 }
 
+async function onSubmit(items) {
+  let dbItems = []
+  for (const item of items) {
+    dbItems.push({
+      id: item.id,
+      value: item.value,
+      parentId: item.parentId
+    })
+    if(item.children && item.children.length > 0) {
+      for (const child of item.children) {
+        dbItems.push({
+          id: child.id,
+          value: child.value,
+          parentId: item.id
+        })
+      }
+    }
+  }
+  dbItems.sort((prev, next) => prev.id - next.id)
+
+  try {
+    const result = await fetch("/api/category", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(dbItems),
+    });
+
+    const data = await result.json();
+    console.log("Categories updated successfully:", data);
+  } catch(error) {
+    console.error("Error updating categories:", error);
+  }
+}
