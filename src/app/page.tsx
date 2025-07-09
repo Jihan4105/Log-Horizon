@@ -1,6 +1,4 @@
-import Link from "next/link";
 import { homemadeApple } from "@/lib/font"
-import { Button } from "@/components/ui/button"
 import { BsChevronRight } from "react-icons/bs";
 import {RegisterLink, LoginLink} from "@kinde-oss/kinde-auth-nextjs/components";
 

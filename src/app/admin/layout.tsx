@@ -1,10 +1,11 @@
 "use client";
 
-import clsx from "clsx";
 import { useState } from "react";
+import clsx from "clsx";
 import { homemadeApple } from "@/lib/font";
 import Link from "next/link";
 import { LogoutLink } from "@kinde-oss/kinde-auth-nextjs/components";
+import { useKindeBrowserClient } from "@kinde-oss/kinde-auth-nextjs";
 
 // Icons
 import { IoHomeOutline } from "react-icons/io5";
@@ -22,7 +23,19 @@ export default function AdminLayout ({
 }>) {
   const [sidebarStatus, setSidebarStatus] = useState(false);
   const [overlayStatus, setOverlayStatus] = useState(false);
+  const { getPermission, isLoading } = useKindeBrowserClient();
+  const isAdmin = !isLoading && getPermission("admin")?.isGranted;
+  
+  if(!isAdmin && !isLoading) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <h1 className="text-2xl">You do not have permission to access this page.</h1>
+        <Link href="/" className="ml-4 text-blue-500 hover:underline">Back To Login</Link>
+      </div>
+    );
+  }
 
+    
   function switchSidebarStatus() {
     setSidebarStatus(!sidebarStatus);
     setOverlayStatus(!overlayStatus);
@@ -126,6 +139,7 @@ export default function AdminLayout ({
         >
           <HiMiniBars3 />
         </button>
+
         {/* Contents */}
         {children}
       </div>
