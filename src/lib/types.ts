@@ -1,9 +1,14 @@
 export type MinimalTreeItemData = {
   id: number;
   value: string;
-  parentId: number | null;
   children?: MinimalTreeItemData[];
 };
+
+export type CategoryTreeData = {
+  id: number;
+  value: string;
+  parentId: number | null;
+}
 
 export type UserData = {
   userid: string;

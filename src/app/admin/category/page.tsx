@@ -7,9 +7,10 @@ import {
   TreeItemComponentProps,
   SortableTree
 } from 'dnd-kit-sortable-tree';
-import { MinimalTreeItemData } from '@/lib/types';
+import { MinimalTreeItemData, CategoryTreeData } from '@/lib/types';
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
+import { toast, Toaster } from 'sonner';
 
 import { GoPlus } from "react-icons/go";
 
@@ -54,14 +55,20 @@ export default function CategoryManagementPage() {
   const [items, setItems] = useState<MinimalTreeItemData[]>([]);
   const [isAdding, setIsAdding] = useState<boolean>(false);
   const [newCategory, setNewCategory] = useState<string>("")
+  const [isUpdating, setIsUpdating] = useState<boolean>(false);
 
   useEffect(() => {
     async function fetchData () {
       try {
         const res = await fetch("/api/category");
         const data = await res.json();
+        console.log(data)
         initialTree.current = data;
-        nextId.current = data.length
+        let childrens = 0
+        for(const item of data) {
+          childrens += item.children ? item.children.length : 0;
+        }
+        nextId.current = data.length + childrens + 1;
         setItems(data);
       } catch (error) {
         console.error("Failed to fetch category items:", error);
@@ -75,6 +82,10 @@ export default function CategoryManagementPage() {
       inputRef.current.focus();
     }
   }, [isAdding])
+
+  if(isUpdating) {
+    onSubmit(items!, setIsUpdating)
+  }
 
   return (
     <>
@@ -128,12 +139,14 @@ export default function CategoryManagementPage() {
               )}
               disabled={!newCategory.trim() || !items}
               onClick={() => {
+                setIsAdding(false)
+                setNewCategory("")
                 setItems([
                   ...items,
                   {
                     id: nextId.current++,
                     value: newCategory.trim(),
-                    parentId: null,
+                    children: []
                   }
                 ])
               }}
@@ -153,35 +166,30 @@ export default function CategoryManagementPage() {
       <div className="w-full flex justify-end">
         <Button 
           className="border border-gray-300 rounded-none" 
-          onClick={() => {onSubmit(items!)}}
-          disabled={JSON.stringify(items) === JSON.stringify(initialTree.current)}
+          onClick={() => {
+            setIsUpdating(true);
+          }}
+          disabled={JSON.stringify(items) === JSON.stringify(initialTree.current) || isUpdating}
         >
-          Submit
+          {isUpdating ? 
+            <Spinner size={20} /> 
+            : 
+            "Save Changes"
+          }
         </Button>
+        <Toaster />
       </div>
     </>
   );
 }
 
-async function onSubmit(items: MinimalTreeItemData[]) {
-  let dbItems = []
-  for (const item of items) {
-    dbItems.push({
-      id: item.id,
-      value: item.value,
-      parentId: item.parentId
-    })
-    if(item.children && item.children.length > 0) {
-      for (const child of item.children) {
-        dbItems.push({
-          id: child.id,
-          value: child.value,
-          parentId: item.id
-        })
-      }
-    }
-  }
+async function onSubmit(items: MinimalTreeItemData[], setIsUpdating: (loading: boolean) => void) {
+  console.log(items)
+  let dbItems: CategoryTreeData[] = []
+  arrayRecursiveFunc(dbItems, items, null)
   dbItems.sort((prev, next) => prev.id - next.id)
+
+  console.log(dbItems)
 
   try {
     const result = await fetch("/api/category", {
@@ -194,7 +202,24 @@ async function onSubmit(items: MinimalTreeItemData[]) {
 
     const data = await result.json();
     console.log("Categories updated successfully:", data);
+    toast.success("Categories updated successfully!");
+    setIsUpdating(false);
   } catch(error) {
     console.error("Error updating categories:", error);
+    toast.success("Something went wrong while updating categories...");
+    setIsUpdating(false);
+  }
+}
+
+function arrayRecursiveFunc(dbItems: object[], children: MinimalTreeItemData[], parentId: number | null) {
+  for (const child of children) {
+    dbItems.push({
+      id: child.id,
+      value: child.value,
+      parentId: parentId
+    })
+    if(child.children && child.children.length > 0) {
+      arrayRecursiveFunc(dbItems, child.children, child.id)
+    }
   }
 }
