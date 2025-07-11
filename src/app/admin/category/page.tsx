@@ -19,29 +19,90 @@ const TreeItem = forwardRef<
   HTMLDivElement,
   TreeItemComponentProps<MinimalTreeItemData>
 >((props, ref) => {
+  const { setItems } = props
+  const inputRef = useRef<HTMLInputElement>(null)
+  const [isEditing, setIsEditing] = useState<boolean>(false)
+  const [editValue, setEditValue] = useState<string>(props.item.value)
+
+  useEffect(() => {
+    if(isEditing && inputRef.current) {
+      inputRef.current.focus()
+    }
+  }, [isEditing])
+
+  useEffect(() => {
+    setEditValue(props.item.value);
+  }, [props.item.value]);
+
   return (
     <SimpleTreeItemWrapper {...props} ref={ref} className="*:bg-white group">
       <div className="flex items-center justify-between w-full">
-        <div className="flex items-center">
-          {props.item.children && props.item.children.length !== 0 && (
-            <div className='mr-1 text-xs font-semibold'>({props.item.children!.length})</div>
-          )}
-          <div>{props.item.value}</div>
-        </div>
-        <div className="group-hover:flex hidden gap-2">
-          <Button variant={"outline"} size={"sm"} className="rounded-none border-[#d2d2d2] h-[24px] text-[12px]">
-            Edit
-          </Button>
-          {(props.item.children && props.item.children.length !== 0) ? (
-            <Button variant={"outline"} size={"sm"} className="rounded-none border-[#d2d2d2] h-[24px] text-[12px] cursor-not-allowed!" disabled>
-              Delete
+        {isEditing ?
+          <input 
+            ref={inputRef}
+            id='editInput'
+            value={editValue}
+            onChange={(e) => {setEditValue(e.target.value)}}
+            className='outline-none border-1 border-[#d2d2d2] rounded-none'
+          />
+          :
+          <div className="flex items-center">
+            {props.item.children && props.item.children.length !== 0 && (
+              <div className='mr-1 text-xs font-semibold'>({props.item.children!.length})</div>
+            )}
+            <div>{props.item.value}</div>
+          </div>
+        }
+        {isEditing ? 
+          <div className="flex gap-2">
+            <Button 
+              variant={"outline"} 
+              size={"sm"} 
+              className="rounded-none border-[#d2d2d2] h-[24px] text-[12px]"
+              onClick={() => {setIsEditing(false); setEditValue(props.item.value)}}
+            >
+              Cancel
             </Button>
-          ) : (
-            <Button variant={"outline"} size={"sm"} className="rounded-none border-[#d2d2d2] h-[24px] text-[12px]">
-              Delete
-            </Button>             
-          )}
-        </div>
+            <Button 
+              variant={"outline"} 
+              size={"sm"} 
+              className={clsx(
+                "rounded-none border-[#d2d2d2] h-[24px] text-[12px]", 
+                {
+                  "cursor-not-allowed!": !editValue.trim() || !editValue
+                }
+              )}
+              disabled={!editValue.trim() || !editValue}
+              onClick={() => {
+                setIsEditing(false)
+                setItems!(prevItems => 
+                  prevItems.map(item => 
+                    item.id === props.item.id 
+                    ? {...item, value: editValue}
+                    : item
+                  )
+                )
+              }}
+            >
+              Submit
+            </Button>
+          </div>
+          :
+          <div className="group-hover:flex hidden gap-2">
+            <Button variant={"outline"} size={"sm"} className="rounded-none border-[#d2d2d2] h-[24px] text-[12px]" onClick={() => {setIsEditing(true)}}>
+              Edit
+            </Button>
+            {(props.item.children && props.item.children.length !== 0) ? (
+              <Button variant={"outline"} size={"sm"} className="rounded-none border-[#d2d2d2] h-[24px] text-[12px] cursor-not-allowed!" disabled>
+                Delete
+              </Button>
+            ) : (
+              <Button variant={"outline"} size={"sm"} className="rounded-none border-[#d2d2d2] h-[24px] text-[12px]">
+                Delete
+              </Button>             
+            )}
+          </div>
+        }
       </div>
     </SimpleTreeItemWrapper>
   );
@@ -62,7 +123,6 @@ export default function CategoryManagementPage() {
       try {
         const res = await fetch("/api/category");
         const data = await res.json();
-        console.log(data)
         initialTree.current = data;
         let childrens = 0
         for(const item of data) {
@@ -83,9 +143,13 @@ export default function CategoryManagementPage() {
     }
   }, [isAdding])
 
-  if(isUpdating) {
-    onSubmit(items!, setIsUpdating)
-  }
+  useEffect(() => {
+    if (isUpdating) {
+      onSubmit(items, setIsUpdating);
+    }
+  }, [isUpdating]);
+
+  console.log(items)
 
   return (
     <>
@@ -94,9 +158,11 @@ export default function CategoryManagementPage() {
       <div className='p-4 bg-gray-100 mb-4'>
         {items.length > 0 ? 
           <SortableTree
-          items={items}
-          onItemsChanged={setItems}
-          TreeItemComponent={TreeItem}
+            items={items}
+            onItemsChanged={setItems}
+            TreeItemComponent={props => (
+              <TreeItem {...props} setItems={setItems} />
+            )}
           />
           :
           <Spinner />
@@ -184,12 +250,9 @@ export default function CategoryManagementPage() {
 }
 
 async function onSubmit(items: MinimalTreeItemData[], setIsUpdating: (loading: boolean) => void) {
-  console.log(items)
   let dbItems: CategoryTreeData[] = []
   arrayRecursiveFunc(dbItems, items, null)
   dbItems.sort((prev, next) => prev.id - next.id)
-
-  console.log(dbItems)
 
   try {
     const result = await fetch("/api/category", {
@@ -206,7 +269,7 @@ async function onSubmit(items: MinimalTreeItemData[], setIsUpdating: (loading: b
     setIsUpdating(false);
   } catch(error) {
     console.error("Error updating categories:", error);
-    toast.success("Something went wrong while updating categories...");
+    toast.error("Something went wrong while updating categories...");
     setIsUpdating(false);
   }
 }
