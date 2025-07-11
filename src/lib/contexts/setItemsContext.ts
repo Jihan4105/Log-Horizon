@@ -1,3 +1,4 @@
 import { createContext } from "react";
+import { SetItemsType } from "@/lib/types";
 
-export const setItemsContext = createContext(null)
+export const SetItemsContext = createContext<SetItemsType>(() => {})

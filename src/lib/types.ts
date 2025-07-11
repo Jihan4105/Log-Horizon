@@ -10,6 +10,8 @@ export type CategoryTreeData = {
   parentId: number | null;
 }
 
+export type SetItemsType = React.Dispatch<React.SetStateAction<MinimalTreeItemData[]>>;
+
 export type UserData = {
   userid: string;
   username: string;

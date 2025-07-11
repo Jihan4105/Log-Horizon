@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, forwardRef, useEffect, useRef } from 'react';
+import { useState, forwardRef, useEffect, useRef, useContext } from 'react';
 import clsx from 'clsx';
 import {
   SimpleTreeItemWrapper,
@@ -14,15 +14,17 @@ import { toast, Toaster } from 'sonner';
 
 import { GoPlus } from "react-icons/go";
 
+import { SetItemsContext } from '@/lib/contexts/SetItemsContext';
+
 
 const TreeItem = forwardRef<
   HTMLDivElement,
   TreeItemComponentProps<MinimalTreeItemData>
 >((props, ref) => {
-  const { setItems } = props
   const inputRef = useRef<HTMLInputElement>(null)
   const [isEditing, setIsEditing] = useState<boolean>(false)
   const [editValue, setEditValue] = useState<string>(props.item.value)
+  const setItems = useContext(SetItemsContext)
 
   useEffect(() => {
     if(isEditing && inputRef.current) {
@@ -74,14 +76,13 @@ const TreeItem = forwardRef<
               )}
               disabled={!editValue.trim() || !editValue}
               onClick={() => {
+                setItems!((prevItems) => {
+                  const updated = updateTreeValue(prevItems, props.item.id, editValue)
+                  console.log("prevItems === updated?", prevItems === updated);
+                  console.log(updated)
+                  return updated;
+                });
                 setIsEditing(false)
-                setItems!(prevItems => 
-                  prevItems.map(item => 
-                    item.id === props.item.id 
-                    ? {...item, value: editValue}
-                    : item
-                  )
-                )
               }}
             >
               Submit
@@ -149,7 +150,9 @@ export default function CategoryManagementPage() {
     }
   }, [isUpdating]);
 
-  console.log(items)
+  useEffect(() => {
+    console.log("items changed", items)
+  }, [items]);
 
   return (
     <>
@@ -157,13 +160,13 @@ export default function CategoryManagementPage() {
       <p className='mb-6'>You can sort your categories with Drag n Drop</p>
       <div className='p-4 bg-gray-100 mb-4'>
         {items.length > 0 ? 
-          <SortableTree
-            items={items}
-            onItemsChanged={setItems}
-            TreeItemComponent={props => (
-              <TreeItem {...props} setItems={setItems} />
-            )}
-          />
+          <SetItemsContext.Provider value={setItems}>
+            <SortableTree
+              items={items}
+              onItemsChanged={setItems}
+              TreeItemComponent={KeyedTreeItem}
+            />
+          </SetItemsContext.Provider>
           :
           <Spinner />
         }
@@ -249,6 +252,10 @@ export default function CategoryManagementPage() {
   );
 }
 
+function KeyedTreeItem(props) {
+  return <TreeItem {...props} key={props.item.id + "-" + props.item.value + "-" + (props.item.children?.length ?? 0)} />
+}
+
 async function onSubmit(items: MinimalTreeItemData[], setIsUpdating: (loading: boolean) => void) {
   let dbItems: CategoryTreeData[] = []
   arrayRecursiveFunc(dbItems, items, null)
@@ -285,4 +292,20 @@ function arrayRecursiveFunc(dbItems: object[], children: MinimalTreeItemData[], 
       arrayRecursiveFunc(dbItems, child.children, child.id)
     }
   }
+}
+
+function updateTreeValue(items: MinimalTreeItemData[], id: number, newValue: string): MinimalTreeItemData[] {
+  return items.map(item => {
+    if (item.id === id) {
+      return { 
+        ...item, 
+        value: newValue, 
+        children: item.children ? [...item.children] : [] 
+      };
+    }
+    if (item.children && item.children.length > 0) {
+      return { ...item, children: updateTreeValue(item.children, id, newValue) };
+    }
+    return item;
+  });
 }
