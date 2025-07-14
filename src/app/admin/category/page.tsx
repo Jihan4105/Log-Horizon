@@ -14,6 +14,8 @@ import { toast, Toaster } from 'sonner';
 
 import { GoPlus } from "react-icons/go";
 
+import { HandleSubmitContext } from '@/lib/contexts/HandleSubmitContext';
+import { ItemsContext } from '@/lib/contexts/ItemsContext';
 import { SetItemsContext } from '@/lib/contexts/SetItemsContext';
 
 
@@ -24,7 +26,8 @@ const TreeItem = forwardRef<
   const inputRef = useRef<HTMLInputElement>(null)
   const [isEditing, setIsEditing] = useState<boolean>(false)
   const [editValue, setEditValue] = useState<string>(props.item.value)
-  const setItems = useContext(SetItemsContext)
+  const handleItemsChanged = useContext(HandleSubmitContext)
+  const items = useContext(ItemsContext)
 
   useEffect(() => {
     if(isEditing && inputRef.current) {
@@ -76,13 +79,9 @@ const TreeItem = forwardRef<
               )}
               disabled={!editValue.trim() || !editValue}
               onClick={() => {
-                setItems!((prevItems) => {
-                  const updated = updateTreeValue(prevItems, props.item.id, editValue)
-                  console.log("prevItems === updated?", prevItems === updated);
-                  console.log(updated)
-                  return updated;
-                });
-                setIsEditing(false)
+                const updated = updateTreeValue(items!, props.item.id, editValue);
+                handleItemsChanged!(updated);
+                setIsEditing(false);
               }}
             >
               Submit
@@ -151,22 +150,28 @@ export default function CategoryManagementPage() {
   }, [isUpdating]);
 
   useEffect(() => {
-    console.log("items changed", items)
-  }, [items]);
+    console.log("items changed, ", items)
+  }, [items])
+
+  function handleItemsChanged(newItems: MinimalTreeItemData[]) {
+    setItems(newItems);
+  }
 
   return (
     <>
       <h1 className="text-2xl font-bold">Category Management</h1>
       <p className='mb-6'>You can sort your categories with Drag n Drop</p>
       <div className='p-4 bg-gray-100 mb-4'>
-        {items.length > 0 ? 
-          <SetItemsContext.Provider value={setItems}>
-            <SortableTree
-              items={items}
-              onItemsChanged={setItems}
-              TreeItemComponent={KeyedTreeItem}
-            />
-          </SetItemsContext.Provider>
+        {items.length > 0 ?
+          <ItemsContext.Provider value={items}>
+            <HandleSubmitContext.Provider value={handleItemsChanged}>
+              <SortableTree
+                items={items}
+                onItemsChanged={handleItemsChanged}
+                TreeItemComponent={KeyedTreeItem}
+              />
+              </HandleSubmitContext.Provider>
+            </ItemsContext.Provider> 
           :
           <Spinner />
         }
@@ -295,6 +300,7 @@ function arrayRecursiveFunc(dbItems: object[], children: MinimalTreeItemData[], 
 }
 
 function updateTreeValue(items: MinimalTreeItemData[], id: number, newValue: string): MinimalTreeItemData[] {
+  console.log("update triggered")
   return items.map(item => {
     if (item.id === id) {
       return { 

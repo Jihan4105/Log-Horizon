@@ -12,6 +12,8 @@ export type CategoryTreeData = {
 
 export type SetItemsType = React.Dispatch<React.SetStateAction<MinimalTreeItemData[]>>;
 
+export type HandleSubmitType = ((items: MinimalTreeItemData[]) => void) | null;
+
 export type UserData = {
   userid: string;
   username: string;
