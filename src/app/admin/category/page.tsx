@@ -16,7 +16,7 @@ import { GoPlus } from "react-icons/go";
 
 import { HandleSubmitContext } from '@/lib/contexts/HandleSubmitContext';
 import { ItemsContext } from '@/lib/contexts/ItemsContext';
-import { SetItemsContext } from '@/lib/contexts/SetItemsContext';
+import { LastUpdatedRefContext } from '@/lib/contexts/LastUpdatedRefContext';
 
 
 const TreeItem = forwardRef<
@@ -28,6 +28,7 @@ const TreeItem = forwardRef<
   const [editValue, setEditValue] = useState<string>(props.item.value)
   const handleItemsChanged = useContext(HandleSubmitContext)
   const items = useContext(ItemsContext)
+  const lastUpdatedRef = useContext(LastUpdatedRefContext)
 
   useEffect(() => {
     if(isEditing && inputRef.current) {
@@ -64,7 +65,12 @@ const TreeItem = forwardRef<
               variant={"outline"} 
               size={"sm"} 
               className="rounded-none border-[#d2d2d2] h-[24px] text-[12px]"
-              onClick={() => {setIsEditing(false); setEditValue(props.item.value)}}
+              onMouseDown={(e) => e.stopPropagation()}
+              onClick={(e) => {
+                e.stopPropagation();
+                setIsEditing(false); 
+                setEditValue(props.item.value)
+              }}
             >
               Cancel
             </Button>
@@ -78,9 +84,11 @@ const TreeItem = forwardRef<
                 }
               )}
               disabled={!editValue.trim() || !editValue}
-              onClick={() => {
-                const updated = updateTreeValue(items!, props.item.id, editValue);
-                handleItemsChanged!(updated);
+              onMouseDown={(e) => e.stopPropagation()}
+              onClick={(e) => {
+                e.stopPropagation();
+                lastUpdatedRef.current = { id: props.item.id, value: editValue };
+                handleItemsChanged!(items!);
                 setIsEditing(false);
               }}
             >
@@ -89,7 +97,16 @@ const TreeItem = forwardRef<
           </div>
           :
           <div className="group-hover:flex hidden gap-2">
-            <Button variant={"outline"} size={"sm"} className="rounded-none border-[#d2d2d2] h-[24px] text-[12px]" onClick={() => {setIsEditing(true)}}>
+            <Button 
+              variant={"outline"} 
+              size={"sm"} 
+              className="rounded-none border-[#d2d2d2] h-[24px] text-[12px]" 
+              onMouseDown={(e) => e.stopPropagation()}
+              onClick={(e) => {
+                e.stopPropagation()
+                setIsEditing(true)
+              }}
+            >
               Edit
             </Button>
             {(props.item.children && props.item.children.length !== 0) ? (
@@ -113,6 +130,7 @@ export default function CategoryManagementPage() {
   const initialTree = useRef<MinimalTreeItemData[]>([]);
   const inputRef = useRef<HTMLInputElement>(null);
   const nextId = useRef<number>(0);
+  const lastUpdatedRef = useRef<{ id: number; value: string } | null>(null);
   const [items, setItems] = useState<MinimalTreeItemData[]>([]);
   const [isAdding, setIsAdding] = useState<boolean>(false);
   const [newCategory, setNewCategory] = useState<string>("")
@@ -149,12 +167,17 @@ export default function CategoryManagementPage() {
     }
   }, [isUpdating]);
 
-  useEffect(() => {
-    console.log("items changed, ", items)
-  }, [items])
-
   function handleItemsChanged(newItems: MinimalTreeItemData[]) {
-    setItems(newItems);
+    console.log("handleItemsChanged Triggered!")
+    if (lastUpdatedRef.current) {
+      const { id, value } = lastUpdatedRef.current;
+      lastUpdatedRef.current = null;
+      const updated = updateTreeValue(newItems, id, value);
+      setItems([...updated]);
+    } else {
+      console.log(newItems, items)
+      setItems(newItems);
+    }
   }
 
   return (
@@ -163,15 +186,17 @@ export default function CategoryManagementPage() {
       <p className='mb-6'>You can sort your categories with Drag n Drop</p>
       <div className='p-4 bg-gray-100 mb-4'>
         {items.length > 0 ?
-          <ItemsContext.Provider value={items}>
-            <HandleSubmitContext.Provider value={handleItemsChanged}>
-              <SortableTree
-                items={items}
-                onItemsChanged={handleItemsChanged}
-                TreeItemComponent={KeyedTreeItem}
-              />
-              </HandleSubmitContext.Provider>
-            </ItemsContext.Provider> 
+          <LastUpdatedRefContext.Provider value={lastUpdatedRef}>
+            <ItemsContext.Provider value={items}>
+              <HandleSubmitContext.Provider value={handleItemsChanged}>
+                <SortableTree
+                  items={items}
+                  onItemsChanged={handleItemsChanged}
+                  TreeItemComponent={KeyedTreeItem}
+                />
+                </HandleSubmitContext.Provider>
+              </ItemsContext.Provider> 
+          </LastUpdatedRefContext.Provider>
           :
           <Spinner />
         }
@@ -300,7 +325,6 @@ function arrayRecursiveFunc(dbItems: object[], children: MinimalTreeItemData[], 
 }
 
 function updateTreeValue(items: MinimalTreeItemData[], id: number, newValue: string): MinimalTreeItemData[] {
-  console.log("update triggered")
   return items.map(item => {
     if (item.id === id) {
       return { 
