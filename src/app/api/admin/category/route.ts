@@ -1,6 +1,5 @@
 import { NextResponse, NextRequest } from "next/server";
 import { db } from "@/db";
-import { sql } from "drizzle-orm";
 import { categoryTree } from "@/db/schema";
 
 export async function GET() {
@@ -41,15 +40,9 @@ export async function POST(req: NextRequest) {
   console.log(newItems)
 
   try {
-    await db.insert(categoryTree)
-      .values(newItems)
-      .onConflictDoUpdate({
-        target: categoryTree.id,
-        set: {
-          value: sql`excluded.value`,
-          parentId: sql`excluded.parent_id`
-        }
-      })
+    await db.delete(categoryTree)
+
+    await db.insert(categoryTree).values(newItems)
 
     const result = await db.execute(`SELECT jsonb_pretty(get_category_tree(NULL));`);
     const updatedTree = result.rows[0].jsonb_pretty as string;

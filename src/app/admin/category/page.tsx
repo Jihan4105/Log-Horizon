@@ -144,7 +144,7 @@ export default function CategoryManagementPage() {
   useEffect(() => {
     async function fetchData () {
       try {
-        const res = await fetch("/api/category");
+        const res = await fetch("/api/admin/category");
         const data = await res.json();
         initialTree.current = data;
         setItems(data);
@@ -276,7 +276,7 @@ async function onSubmit(
   dbItems.sort((prev, next) => prev.id - next.id)
 
   try {
-    const result = await fetch("/api/category", {
+    const result = await fetch("/api/admin/category", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
