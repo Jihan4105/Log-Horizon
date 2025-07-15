@@ -50,7 +50,11 @@ export async function POST(req: NextRequest) {
           parentId: sql`excluded.parent_id`
         }
       })
-    return NextResponse.json({ status: 200, message: "POST request received" });
+
+    const result = await db.execute(`SELECT jsonb_pretty(get_category_tree(NULL));`);
+    const updatedTree = result.rows[0].jsonb_pretty as string;
+
+    return NextResponse.json({ status: 200, message: "POST request received", newItemsTree: JSON.parse(updatedTree) });
   } catch(error) {
     console.error("Error inserting/updating categories:", error);
     return NextResponse.json({ status: 500,  error: "Failed to update categories" }, { status: 500 });

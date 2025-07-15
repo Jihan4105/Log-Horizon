@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, forwardRef, useEffect, useRef, useContext } from 'react';
+import React, { useState, forwardRef, useEffect, useRef, useContext } from 'react';
 import clsx from 'clsx';
 import {
   SimpleTreeItemWrapper,
@@ -14,9 +14,7 @@ import { toast, Toaster } from 'sonner';
 
 import { GoPlus } from "react-icons/go";
 
-import { HandleSubmitContext } from '@/lib/contexts/HandleSubmitContext';
-import { ItemsContext } from '@/lib/contexts/ItemsContext';
-import { LastUpdatedRefContext } from '@/lib/contexts/LastUpdatedRefContext';
+import { SetItemsContext } from '@/lib/contexts/SetItemsContext';
 
 
 const TreeItem = forwardRef<
@@ -26,9 +24,7 @@ const TreeItem = forwardRef<
   const inputRef = useRef<HTMLInputElement>(null)
   const [isEditing, setIsEditing] = useState<boolean>(false)
   const [editValue, setEditValue] = useState<string>(props.item.value)
-  const handleItemsChanged = useContext(HandleSubmitContext)
-  const items = useContext(ItemsContext)
-  const lastUpdatedRef = useContext(LastUpdatedRefContext)
+  const setItems = useContext(SetItemsContext)
 
   useEffect(() => {
     if(isEditing && inputRef.current) {
@@ -87,8 +83,7 @@ const TreeItem = forwardRef<
               onMouseDown={(e) => e.stopPropagation()}
               onClick={(e) => {
                 e.stopPropagation();
-                lastUpdatedRef.current = { id: props.item.id, value: editValue };
-                handleItemsChanged!(items!);
+                setItems(prevItems => updateTreeValue(prevItems, props.item.id, editValue))
                 setIsEditing(false);
               }}
             >
@@ -114,7 +109,19 @@ const TreeItem = forwardRef<
                 Delete
               </Button>
             ) : (
-              <Button variant={"outline"} size={"sm"} className="rounded-none border-[#d2d2d2] h-[24px] text-[12px]">
+              <Button 
+                variant={"outline"} 
+                size={"sm"} 
+                className="rounded-none border-[#d2d2d2] h-[24px] text-[12px]"
+                onMouseDown={(e) => e.stopPropagation()}
+                onClick={(e) => {
+                  e.stopPropagation()
+                  setItems((prevItems) => {
+                    const updated = updateTreeValue(prevItems, props.item.id)
+                    return updated
+                  })
+                }}
+              >
                 Delete
               </Button>             
             )}
@@ -129,8 +136,6 @@ TreeItem.displayName = "TreeItem";
 export default function CategoryManagementPage() {
   const initialTree = useRef<MinimalTreeItemData[]>([]);
   const inputRef = useRef<HTMLInputElement>(null);
-  const nextId = useRef<number>(0);
-  const lastUpdatedRef = useRef<{ id: number; value: string } | null>(null);
   const [items, setItems] = useState<MinimalTreeItemData[]>([]);
   const [isAdding, setIsAdding] = useState<boolean>(false);
   const [newCategory, setNewCategory] = useState<string>("")
@@ -142,11 +147,6 @@ export default function CategoryManagementPage() {
         const res = await fetch("/api/category");
         const data = await res.json();
         initialTree.current = data;
-        let childrens = 0
-        for(const item of data) {
-          childrens += item.children ? item.children.length : 0;
-        }
-        nextId.current = data.length + childrens + 1;
         setItems(data);
       } catch (error) {
         console.error("Failed to fetch category items:", error);
@@ -163,40 +163,23 @@ export default function CategoryManagementPage() {
 
   useEffect(() => {
     if (isUpdating) {
-      onSubmit(items, setIsUpdating);
+      onSubmit(items, setIsUpdating, initialTree);
     }
-  }, [isUpdating]);
-
-  function handleItemsChanged(newItems: MinimalTreeItemData[]) {
-    console.log("handleItemsChanged Triggered!")
-    if (lastUpdatedRef.current) {
-      const { id, value } = lastUpdatedRef.current;
-      lastUpdatedRef.current = null;
-      const updated = updateTreeValue(newItems, id, value);
-      setItems([...updated]);
-    } else {
-      console.log(newItems, items)
-      setItems(newItems);
-    }
-  }
-
+  }, [isUpdating, items]);
+  
   return (
     <>
       <h1 className="text-2xl font-bold">Category Management</h1>
       <p className='mb-6'>You can sort your categories with Drag n Drop</p>
       <div className='p-4 bg-gray-100 mb-4'>
         {items.length > 0 ?
-          <LastUpdatedRefContext.Provider value={lastUpdatedRef}>
-            <ItemsContext.Provider value={items}>
-              <HandleSubmitContext.Provider value={handleItemsChanged}>
-                <SortableTree
-                  items={items}
-                  onItemsChanged={handleItemsChanged}
-                  TreeItemComponent={KeyedTreeItem}
-                />
-                </HandleSubmitContext.Provider>
-              </ItemsContext.Provider> 
-          </LastUpdatedRefContext.Provider>
+          <SetItemsContext.Provider value={setItems}>
+            <SortableTree
+              items={items}
+              onItemsChanged={setItems}
+              TreeItemComponent={TreeItem}
+            />
+          </SetItemsContext.Provider>
           :
           <Spinner />
         }
@@ -238,12 +221,13 @@ export default function CategoryManagementPage() {
               )}
               disabled={!newCategory.trim() || !items}
               onClick={() => {
+                const newId = findAvailableId(items);
                 setIsAdding(false)
                 setNewCategory("")
                 setItems([
                   ...items,
                   {
-                    id: nextId.current++,
+                    id: newId,
                     value: newCategory.trim(),
                     children: []
                   }
@@ -282,11 +266,11 @@ export default function CategoryManagementPage() {
   );
 }
 
-function KeyedTreeItem(props) {
-  return <TreeItem {...props} key={props.item.id + "-" + props.item.value + "-" + (props.item.children?.length ?? 0)} />
-}
-
-async function onSubmit(items: MinimalTreeItemData[], setIsUpdating: (loading: boolean) => void) {
+async function onSubmit(
+  items: MinimalTreeItemData[], 
+  setIsUpdating: (loading: boolean) => void,
+  initialTree: React.RefObject<MinimalTreeItemData[]>
+) {
   let dbItems: CategoryTreeData[] = []
   arrayRecursiveFunc(dbItems, items, null)
   dbItems.sort((prev, next) => prev.id - next.id)
@@ -299,8 +283,9 @@ async function onSubmit(items: MinimalTreeItemData[], setIsUpdating: (loading: b
       },
       body: JSON.stringify(dbItems),
     });
-
     const data = await result.json();
+    console.log(data.newItemsTree)
+    initialTree.current = data.newItemsTree
     console.log("Categories updated successfully:", data);
     toast.success("Categories updated successfully!");
     setIsUpdating(false);
@@ -324,18 +309,53 @@ function arrayRecursiveFunc(dbItems: object[], children: MinimalTreeItemData[], 
   }
 }
 
-function updateTreeValue(items: MinimalTreeItemData[], id: number, newValue: string): MinimalTreeItemData[] {
-  return items.map(item => {
-    if (item.id === id) {
-      return { 
-        ...item, 
-        value: newValue, 
-        children: item.children ? [...item.children] : [] 
+function updateTreeValue(
+  items: MinimalTreeItemData[], 
+  id: number, 
+  newValue?: string
+): MinimalTreeItemData[] {
+  return items
+    .filter(item => {
+      if (newValue === undefined && item.id === id) {
+        return false; // 제거
+      }
+      return true; // 유지
+    }) 
+    .map(item => {
+      const updatedChildren = item.children
+        ? updateTreeValue(item.children, id, newValue)
+        : [];
+
+      if (item.id === id && newValue) {
+        return {
+          ...item,
+          value: newValue,
+          children: updatedChildren
+        };
+      }
+
+      return {
+        ...item,
+        children: updatedChildren
       };
+    });
+}
+
+function findAvailableId(items: MinimalTreeItemData[]): number {
+  const existingIds = new Set<number>();
+
+  function traverse(nodes: MinimalTreeItemData[]) {
+    for (const node of nodes) {
+      existingIds.add(node.id);
+      if (node.children) traverse(node.children);
     }
-    if (item.children && item.children.length > 0) {
-      return { ...item, children: updateTreeValue(item.children, id, newValue) };
-    }
-    return item;
-  });
+  }
+
+  traverse(items);
+
+  let id = 1;
+  while (existingIds.has(id)) {
+    id++;
+  }
+  return id;
 }
