@@ -1,8 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import React, { useState, useEffect } from "react";
 
 import dynamic from "next/dynamic";
+
+import { MinimalTreeItemData } from "@/lib/types";
 
 const TinyEditor = dynamic(() => import("@/components/TinyEditor"), { ssr: false });
 
@@ -15,35 +17,52 @@ import {
 } from "@/components/ui/dropdown-menu"
 
 export default function NewPostPage() {
-  const [category, setCategory] = useState<string>("category");
+  const [categoryItems, setCategoryItems] = useState<MinimalTreeItemData[]>([])
+  const [category, setCategory] = useState<string>("Select the Category");
   const [title, setTitle] = useState<string>("");
+
+  useEffect(() => {
+    async function getCategory() {
+      try {
+        const res = await fetch("/api/admin/category")
+        const data = await res.json()
+        console.log(data)
+        setCategoryItems(data)
+      } catch(error) {
+        console.log("Failed to fetch category items: ", error)
+      }
+    }
+    getCategory()
+  }, [])
 
   return (
     <div className="mt-3">
       <div className="mb-5">
         <DropdownMenu>
           <DropdownMenuTrigger asChild className="border-[#d2d2d2]">
-            <Button variant="outline" className="text-gray-600">{category}</Button>
+            <Button variant="outline" className="text-gray-600 outline-none">{category}</Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent className="w-56 border-[#d2d2d2] bg-white text-gray-600" align="start">
-            <DropdownMenuItem
-              onSelect={() => setCategory("Category1")}
-              className="hover:bg-gray-100"
-            >
-              One
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              onSelect={() => setCategory("Category2")}
-              className="hover:bg-gray-100"
-            >
-              - Nested One
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              onSelect={() => setCategory("Category3")}
-              className="hover:bg-gray-100"
-            >
-              Three
-            </DropdownMenuItem>
+            {categoryItems.map((rootItem) => (
+              <React.Fragment key={rootItem.id}>
+                <DropdownMenuItem
+                  onSelect={() => setCategory(rootItem.value)}
+                  className="hover:bg-gray-100"
+                >
+                  {rootItem.value}
+                </DropdownMenuItem>
+
+                {rootItem.children?.map((child) => (
+                  <DropdownMenuItem
+                    key={child.id}
+                    onSelect={() => setCategory(child.value)}
+                    className="hover:bg-gray-100"
+                  >
+                    - {child.value}
+                  </DropdownMenuItem>
+                ))}
+              </React.Fragment>
+            ))}
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
