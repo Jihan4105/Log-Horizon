@@ -25,33 +25,21 @@ export default function TinyEditor() {
           ],
          images_upload_handler: async (
             blobInfo: any, 
-            success: (url: string) => void,
-            failure: (err: string) => void
           ) => {
-            try {
+            return new Promise((resolve, reject) => {
               const formData = new FormData();
-              formData.append("file", blobInfo.blob(), blobInfo.filename());
-
-              const res = await fetch("/api/admin/upload", {
-                method: "POST",
+              formData.append('file', blobInfo.blob(), blobInfo.filename());
+              fetch('/api/admin/upload', {
+                method: 'POST',
                 body: formData,
-              });
-
-              const data = await res.json();
-
-              if (!data.url) {
-                throw new Error("Upload failed: Missing URL");
-              }
-
-              console.log(window.location.origin, data.url)
-
-              const absoluteUrl = `${window.location.origin}${data.url}`;
-              console.log("Image upload success, URL:", absoluteUrl);
-              success(absoluteUrl); 
-            } catch (error) {
-              console.error("Upload error:", error);
-              failure("Image upload failed.");
-            }
+              })
+                .then(res => res.json())
+                .then(data => {
+                  if (data.url) resolve(data.url);
+                  else reject('No image url returned');
+                })
+                .catch(() => reject('Image upload failed'));
+            });
           },
         }}
         initialValue=""
