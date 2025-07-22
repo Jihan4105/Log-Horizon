@@ -8,8 +8,19 @@ export async function POST(req: NextRequest) {
 
   switch (routeMethod) {
     case "New Post":
-      
-      break;
+      const { title, category, content } = datas
+
+      try {
+        await db.insert(posts).values({
+          title,
+          category,
+          content,
+        })
+        return NextResponse.json({ status: 200, message: "New post created Succesffuly!"}, { status: 200 })
+      } catch(error) {
+        console.error("Error Occured inserting post data: ", error)
+        return NextResponse.json({ status: 500, error: "Failed to insert post" }, { status: 500 })
+      }
   }
   return NextResponse.json({ message: "Req Sucessfully recieved!"})
 }

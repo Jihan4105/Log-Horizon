@@ -10,6 +10,7 @@ export const savedPosts = pgTable("save_posts", {
 
 export const posts = pgTable("posts", {
   id: serial("id").primaryKey(),
+  category: varchar("category").default("None"),
   title: varchar("title", { length: 255 }).notNull(),
   content: text("content").notNull(),
   createdAt: timestamp("created_at").defaultNow(),

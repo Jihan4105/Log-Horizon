@@ -177,6 +177,6 @@ async function SubmitNewPost(category: string, title:string, content: string) {
     const res = await result.json()
     console.log(res.message)
   } catch(error) {
-    console.log("Error occured..: ", error);
+    console.error("Error occured..: ", error);
   }
 }
