@@ -1,11 +1,14 @@
-"use client"
-
-import { useState } from 'react';
 import { Editor } from '@tinymce/tinymce-react';
 
-export default function TinyEditor() {
-  const [content, setContent] = useState("")
-  
+interface TinyEditorProps {
+  setContent: React.Dispatch<React.SetStateAction<string>>;
+  content: string;
+}
+
+export default function TinyEditor({
+  setContent,
+  content,
+}: TinyEditorProps) {
   return (
     <div>
       <Editor

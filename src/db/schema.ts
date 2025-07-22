@@ -1,6 +1,13 @@
 import { pgTable, serial, varchar, boolean, timestamp, integer, text}  from "drizzle-orm/pg-core"
 import { relations } from "drizzle-orm"
 
+export const savedPosts = pgTable("save_posts", {
+  id: serial("id").primaryKey(),
+  title: varchar("title", { length: 255 }).notNull().default("UnTitled"),
+  content: text("content").notNull().default("No Content"),
+  createdAt: timestamp("created_at").defaultNow(),
+})
+
 export const posts = pgTable("posts", {
   id: serial("id").primaryKey(),
   title: varchar("title", { length: 255 }).notNull(),
