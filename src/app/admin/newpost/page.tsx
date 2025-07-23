@@ -1,11 +1,12 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { useStateEffect } from "@/lib/hooks/useStateEffect";
 import clsx from "clsx";
 
 import dynamic from "next/dynamic";
 
-import { MinimalTreeItemData } from "@/lib/types";
+import { MinimalTreeItemData, SavedPostsData } from "@/lib/types";
 
 const TinyEditor = dynamic(() => import("@/components/TinyEditor"), { ssr: false });
 
@@ -23,25 +24,55 @@ import { RiDeleteBin5Line } from "react-icons/ri";
 
 export default function NewPostPage() {
   const [categoryItems, setCategoryItems] = useState<MinimalTreeItemData[]>([])
+  const [savedPosts, setSavedPosts] = useState<SavedPostsData[]>([])
   const [category, setCategory] = useState<string>("");
   const [title, setTitle] = useState<string>("");
   const [isSaveOpen, setIsSaveOpen] = useState<boolean>(false)
   const [content, setContent] = useState<string>("")
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false)
+  const [isRefreshRequire, setIsRefreshRequire] = useState<boolean>(false)
 
   useEffect(() => {
     async function getCategory() {
       try {
         const res = await fetch("/api/admin/category")
         const data = await res.json()
-        console.log(data)
         setCategoryItems(data)
       } catch(error) {
         console.log("Failed to fetch category items: ", error)
       }
     }
+
+    async function getSavedPost() {
+      try {
+        const res = await fetch("/api/admin/newpost")
+        const data = await res.json()
+        setSavedPosts(data)
+      } catch(error) {
+        console.log("Failed to fetch saved posts: ", error)
+      }
+    }
+
+    getSavedPost()
     getCategory()
   }, [])
+
+  useStateEffect(() => {
+    if(isRefreshRequire) {
+      async function getSavedPost() {
+        try {
+          const res = await fetch("/api/admin/newpost")
+          const data = await res.json()
+          setSavedPosts(data)
+        } catch(error) {
+          console.log("Failed to fetch saved posts: ", error)
+        }
+      }
+
+      getSavedPost()
+      setIsRefreshRequire(false)
+    }
+  }, [isRefreshRequire])
 
   useEffect(() => {
     async function MakeNewPost() {
@@ -108,7 +139,10 @@ export default function NewPostPage() {
         <div className="rounded-full cursor-pointer text-center border flex">
           <div 
             className="pl-7 h-full flex items-center"
-            onClick={() => {SavePost(category, title, content)}}
+            onClick={async () => {
+              await SavePost(category, title, content)
+              setIsRefreshRequire(true)
+            }}
           >
             Save |
           </div>
@@ -116,7 +150,7 @@ export default function NewPostPage() {
             className="text-red-500 pr-7 pl-2 flex items-center"
             onClick={() => {setIsSaveOpen(!isSaveOpen)}}
           >
-            2
+            {savedPosts.length}
           </div>
         </div>
         <div 
@@ -153,20 +187,21 @@ export default function NewPostPage() {
           <h1 className="text-2xl mb-4 self-center">Saves</h1>
           <div className="h-0.5 bg-[#CAE3FF] mb-4" />
           <ul className="flex flex-col gap-1">
-            <li className="flex items-center group">
-              <span className="w-[75px] mr-10">23hours ago</span>
-              <span className="hover:underline cursor-pointer mr-2">
-                Title that working...
-              </span>
-              <RiDeleteBin5Line className="hidden group-hover:block cursor-pointer"/>
-            </li>
-            <li className="flex items-center group">
-              <span className="w-[75px] mr-10">2025-07-17</span>
-              <span className="hover:underline cursor-pointer mr-2">
-                Title that working...
-              </span>
-              <RiDeleteBin5Line className="hidden group-hover:block cursor-pointer"/>
-            </li>
+            {
+              savedPosts.map((savedPost) => {
+                return (
+                  <li key={savedPost.id} className="flex items-center group">
+                    <span className="w-[75px] mr-10">
+                      {getTimeDiff(savedPost.createdAt)}
+                    </span>
+                    <span className="hover:underline cursor-pointer mr-2">
+                      {savedPost.title === "" ? "Untitled" : savedPost.title}
+                    </span>
+                    <RiDeleteBin5Line className="hidden group-hover:block cursor-pointer"/>
+                  </li>
+                )
+              })
+            }
           </ul>
         </div>
         <div className="flex flex-col">
@@ -249,5 +284,27 @@ async function SavePost(
   } catch(error) {
     console.error("Error occured..: ", error);
     toast.error("Something went wrong while saving post...")
+  }
+}
+
+function getTimeDiff(createdAt: string): string {
+  const createdTime = new Date(createdAt)
+  const now = new Date()
+  const createdDate = new Date(createdTime.getTime() - (now.getTimezoneOffset() * 60 * 1000))
+  const diffMs = now.getTime() - createdDate.getTime()
+
+  const diffSec = Math.floor(diffMs / 1000);
+  const diffMin = Math.floor(diffSec / 60);
+  const diffHours = Math.floor(diffMin / 60);
+  const diffDays = Math.floor(diffHours / 24);
+
+  if (diffSec < 60) {
+    return `${diffSec}sec Ago`;
+  } else if (diffMin < 60) {
+    return `${diffMin}min Ago`;
+  } else if (diffHours < 24) {
+    return `${diffHours}hours Ago`;
+  } else {
+    return `${diffDays}days Ago`;
   }
 }

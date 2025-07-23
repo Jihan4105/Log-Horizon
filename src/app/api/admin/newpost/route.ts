@@ -2,6 +2,30 @@ import { NextResponse, NextRequest } from "next/server";
 import { db } from "@/db";
 import { posts, savedPosts } from "@/db/schema";
 
+export async function GET() {
+  try {
+    const sql = `
+      SELECT json_agg(
+          json_build_object(
+              'id', id,
+              'title', title,
+              'content', content,
+              'createdAt', created_at,
+              'category', category
+          )
+      ) AS result
+      FROM save_posts;
+    `
+    const result = await db.execute(sql)
+    const savedPosts = !result.rows[0].result ? [] : result.rows[0].result
+  
+    return NextResponse.json(savedPosts)
+  } catch(error) {
+    console.error("Error Occured saving data: ", error)
+    return NextResponse.json({ status: 500, message: "Failed to get save posts..." }, { status: 500 })
+  }
+}
+
 export async function POST(req: NextRequest) {
   const datas = await req.json();
   const routeMethod: "New Post" | "Save Post" = datas.route

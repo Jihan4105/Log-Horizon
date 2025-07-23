@@ -10,6 +10,14 @@ export type CategoryTreeData = {
   parentId: number | null;
 }
 
+export type SavedPostsData = {
+  id: number;
+  title: string;
+  content: string;
+  createdAt: string;
+  category: string;
+}
+
 export type SetItemsType = React.Dispatch<React.SetStateAction<MinimalTreeItemData[]>>;
 
 export type UserData = {
