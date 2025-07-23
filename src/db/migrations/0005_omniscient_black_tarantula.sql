@@ -1,0 +1,1 @@
+ALTER TABLE "save_posts" ADD COLUMN "category" varchar DEFAULT 'None';

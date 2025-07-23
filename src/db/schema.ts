@@ -6,6 +6,7 @@ export const savedPosts = pgTable("save_posts", {
   title: varchar("title", { length: 255 }).notNull().default("UnTitled"),
   content: text("content").notNull().default("No Content"),
   createdAt: timestamp("created_at").defaultNow(),
+  category:varchar("category").default("None")
 })
 
 export const posts = pgTable("posts", {

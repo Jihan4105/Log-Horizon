@@ -16,15 +16,18 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { Spinner } from "@/components/ui/spinner";
+import { toast, Toaster } from "sonner";
 
 import { RiDeleteBin5Line } from "react-icons/ri";
 
 export default function NewPostPage() {
   const [categoryItems, setCategoryItems] = useState<MinimalTreeItemData[]>([])
-  const [category, setCategory] = useState<string>("Select the Category");
+  const [category, setCategory] = useState<string>("");
   const [title, setTitle] = useState<string>("");
   const [isSaveOpen, setIsSaveOpen] = useState<boolean>(false)
   const [content, setContent] = useState<string>("")
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false)
 
   useEffect(() => {
     async function getCategory() {
@@ -40,14 +43,34 @@ export default function NewPostPage() {
     getCategory()
   }, [])
 
+  useEffect(() => {
+    async function MakeNewPost() {
+      if(isSubmitting) {
+        const res = await SubmitNewPost(category, title, content, setIsSubmitting)
+        if(res !== "fail") {
+          setCategory("")
+          setTitle("")
+          setContent("")
+        }
+      }
+    }
+    MakeNewPost()
+  }, [isSubmitting, category, content, title])
+
   return (
     <div className="mt-3">
       <div className="mb-5">
         <DropdownMenu>
           <DropdownMenuTrigger asChild className="border-[#d2d2d2]">
-            <Button variant="outline" className="text-gray-600 outline-none">{category}</Button>
+            <Button variant="outline" className="text-gray-600 outline-none">{category === "" ? 'Selecte the Category' : category}</Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent className="w-56 border-[#d2d2d2] bg-white text-gray-600" align="start">
+            <DropdownMenuItem
+              onSelect={() => setCategory("")}
+              className="hover:bg-gray-100"
+            >
+              No Category
+            </DropdownMenuItem>
             {categoryItems.map((rootItem) => (
               <React.Fragment key={rootItem.id}>
                 <DropdownMenuItem
@@ -83,7 +106,10 @@ export default function NewPostPage() {
       <TinyEditor setContent={setContent} content={content}/>
       <div className="flex justify-end gap-4 mt-5">
         <div className="rounded-full cursor-pointer text-center border flex">
-          <div className="pl-7 h-full flex items-center">
+          <div 
+            className="pl-7 h-full flex items-center"
+            onClick={() => {SavePost(category, title, content)}}
+          >
             Save |
           </div>
           <div 
@@ -96,10 +122,14 @@ export default function NewPostPage() {
         <div 
           className="rounded-full px-7 py-2 cursor-pointer text-center bg-black text-white "
           onClick={() => {
-            SubmitNewPost(category, title, content)
+            setIsSubmitting(true)
           }}
         >
-          Submit
+          {isSubmitting ?
+            <Spinner size={20} />
+            :
+            "Submit"
+          }
         </div>
       </div>
 
@@ -154,11 +184,17 @@ export default function NewPostPage() {
           </div>
         </div>
       </div>
+      <Toaster />
     </div>
   );
 }
 
-async function SubmitNewPost(category: string, title:string, content: string) {
+async function SubmitNewPost(
+  category: string, 
+  title:string, 
+  content: string, 
+  setIsSubmitting: (loading: boolean) => void
+) {
   const data = {
     route: "New Post",
     category,
@@ -176,7 +212,42 @@ async function SubmitNewPost(category: string, title:string, content: string) {
     })
     const res = await result.json()
     console.log(res.message)
+    toast.success("New Post Submitted Successfully!")
+    setIsSubmitting(false)
+    return "success"
   } catch(error) {
     console.error("Error occured..: ", error);
+    toast.error("Something went wrong while submitting post...")
+    setIsSubmitting(false)
+    return "fail"
+  }
+}
+
+async function SavePost(
+  category: string, 
+  title:string, 
+  content: string
+) {
+  const data = {
+    route: "Save Post",
+    category,
+    title,
+    content
+  }
+
+  try {
+    const result = await fetch('/api/admin/newpost', {
+      method: 'POST',
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(data),
+    })
+    const res = await result.json()
+    console.log(res.message)
+    toast.success("Post Saved Successfully!")
+  } catch(error) {
+    console.error("Error occured..: ", error);
+    toast.error("Something went wrong while saving post...")
   }
 }
