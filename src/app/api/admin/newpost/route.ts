@@ -42,11 +42,16 @@ async function updateAutoSave(data: { title: string; content: string; category: 
     .where(eq(savedPosts.id, 0));
 }
 
+async function deleteSavedPost(data: { postId: number }) {
+  await db.delete(savedPosts)
+    .where(eq(savedPosts.id, data.postId))
+}
+
 export async function POST(req: NextRequest) {
   const datas = await req.json();
-  const routeMethod: "New Post" | "Save Post" | "AutoSave" = datas.route;
+  const routeMethod: "New Post" | "Save Post" | "AutoSave" | "Delete Save" = datas.route;
 
-  const { title, category, content } = datas;
+  const { title, category, content, postId } = datas;
 
   try {
     if (routeMethod === "New Post") {
@@ -60,6 +65,10 @@ export async function POST(req: NextRequest) {
     if (routeMethod === "AutoSave") {
       await updateAutoSave({ title, category, content });
       return NextResponse.json({ status: 200, message: "Autosaved" });
+    }
+    if(routeMethod === "Delete Save") {
+      await deleteSavedPost({ postId });
+      return NextResponse.json({ status: 200, message: "Delete Successfully!" });
     }
     return NextResponse.json({ status: 400, message: "Invalid route" }, { status: 400 });
   } catch (error) {

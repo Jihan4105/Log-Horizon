@@ -68,7 +68,6 @@ export default function NewPostPage() {
         try {
           const res = await fetch("/api/admin/newpost")
           const data = await res.json()
-          console.log(data)
           setSavedPosts(data)
         } catch(error) {
           console.log("Failed to fetch saved posts: ", error)
@@ -222,17 +221,34 @@ export default function NewPostPage() {
               savedPosts.map((savedPost) => {
                 return (
                   <li key={savedPost.id} className="flex items-center group">
-                    <span className="w-[75px] mr-10">
+                    <span className="w-[90px] mr-8">
                       {savedPost.id === 0 ?
-                        "Auto Saved"
+                        "AutoSaved"
                         :
                         getTimeDiff(savedPost.createdAt)
                       }
                     </span>
-                    <span className="hover:underline cursor-pointer mr-2">
+                    <span 
+                      className="hover:underline cursor-pointer mr-2"
+                      onClick={() => {
+                        setCategory(savedPost.category)
+                        setTitle(savedPost.title)
+                        setContent(savedPost.content)
+                        setIsSaveOpen(false)
+                      }}
+                    >
                       {savedPost.title === "" ? "Untitled" : savedPost.title}
                     </span>
-                    <RiDeleteBin5Line className="hidden group-hover:block cursor-pointer"/>
+                    {savedPost.id !== 0 && 
+                      <RiDeleteBin5Line 
+                        className="hidden group-hover:block cursor-pointer"
+                        onClick={() => {
+                          DeletePost(savedPost.id)
+                            .then(() => setIsRefreshRequire(true))
+                            .catch(console.error)
+                        }}
+                      />
+                    }
                   </li>
                 )
               })
@@ -329,6 +345,28 @@ async function SavePost(
     }else {
       toast.success("Post Saved Successfully!")
     }
+  } catch(error) {
+    console.error("Error occured..: ", error);
+    toast.error("Something went wrong while saving post...")
+  }
+}
+
+async function DeletePost(postId: number) {
+  const data = {
+    route: "Delete Save",
+    postId: postId
+  }
+
+  try {
+    const result = await fetch('/api/admin/newpost', {
+      method: 'POST',
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(data),
+    })
+    const res = await result.json()
+    console.log(res.message)
   } catch(error) {
     console.error("Error occured..: ", error);
     toast.error("Something went wrong while saving post...")
