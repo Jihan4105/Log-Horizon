@@ -1,20 +1,22 @@
 import { NextResponse, NextRequest } from "next/server";
 import { db } from "@/db";
 import { posts, savedPosts } from "@/db/schema";
+import { eq } from "drizzle-orm";
 
 export async function GET() {
   try {
     const sql = `
-      SELECT json_agg(
-          json_build_object(
-              'id', id,
-              'title', title,
-              'content', content,
-              'createdAt', created_at,
-              'category', category
-          )
-      ) AS result
-      FROM save_posts;
+      SELECT json_agg(row_to_json(t)) AS result
+      FROM (
+        SELECT 
+          id, 
+          title, 
+          content, 
+          created_at AS "createdAt", 
+          category
+        FROM save_posts
+        ORDER BY id
+      ) t;
     `
     const result = await db.execute(sql)
     const savedPosts = !result.rows[0].result ? [] : result.rows[0].result
@@ -26,40 +28,45 @@ export async function GET() {
   }
 }
 
+async function insertPost(data: { title: string; category: string; content: string }) {
+  await db.insert(posts).values(data);
+}
+
+async function insertSavedPost(data: { title: string; content: string; category: string }) {
+  await db.insert(savedPosts).values(data);
+}
+
+async function updateAutoSave(data: { title: string; content: string; category: string }) {
+  await db.update(savedPosts)
+    .set(data)
+    .where(eq(savedPosts.id, 0));
+}
+
 export async function POST(req: NextRequest) {
   const datas = await req.json();
-  const routeMethod: "New Post" | "Save Post" = datas.route
+  const routeMethod: "New Post" | "Save Post" | "AutoSave" = datas.route;
 
-  switch (routeMethod) {
-    case "New Post": {
-      const { title, category, content } = datas
+  const { title, category, content } = datas;
 
-      try {
-        await db.insert(posts).values({
-          title,
-          category,
-          content,
-        })
-        return NextResponse.json({ status: 200, message: "New post created Succesffuly!"}, { status: 200 })
-      } catch(error) {
-        console.error("Error Occured inserting post data: ", error)
-        return NextResponse.json({ status: 500, error: "Failed to insert post" }, { status: 500 })
-      }
+  try {
+    if (routeMethod === "New Post") {
+      await insertPost({ title, category, content });
+      return NextResponse.json({ status: 200, message: "New post created successfully!" });
     }
-    case "Save Post": {
-      const { title, category, content } = datas
-
-      try {
-        await db.insert(savedPosts).values({
-          title,
-          content,
-          category
-        })
-        return NextResponse.json({ status: 200, message: "Post Saved Succesfully!"}, { status: 200 })
-      } catch(error) {
-        console.error("Error Occured savaing data: ", error)
-        return NextResponse.json({ status: 500, error: "Failed to save post" }, { status: 500 })
-      }
+    if (routeMethod === "Save Post") {
+      await insertSavedPost({ title, category, content });
+      return NextResponse.json({ status: 200, message: "Post saved successfully!" });
     }
+    if (routeMethod === "AutoSave") {
+      await updateAutoSave({ title, category, content });
+      return NextResponse.json({ status: 200, message: "Autosaved" });
+    }
+    return NextResponse.json({ status: 400, message: "Invalid route" }, { status: 400 });
+  } catch (error) {
+    console.error(`Error Occurred (${routeMethod}):`, error);
+    return NextResponse.json(
+      { status: 500, message: `Failed to process ${routeMethod}` },
+      { status: 500 }
+    );
   }
 }

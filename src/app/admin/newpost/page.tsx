@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useStateEffect } from "@/lib/hooks/useStateEffect";
 import clsx from "clsx";
 
@@ -31,7 +31,11 @@ export default function NewPostPage() {
   const [content, setContent] = useState<string>("")
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false)
   const [isRefreshRequire, setIsRefreshRequire] = useState<boolean>(false)
+  const categoryRef = useRef(category);
+  const titleRef = useRef(title);
+  const contentRef = useRef(content);
 
+  // Init Fetch
   useEffect(() => {
     async function getCategory() {
       try {
@@ -57,12 +61,14 @@ export default function NewPostPage() {
     getCategory()
   }, [])
 
+  // Fetch savedPosts after post saved
   useStateEffect(() => {
     if(isRefreshRequire) {
       async function getSavedPost() {
         try {
           const res = await fetch("/api/admin/newpost")
           const data = await res.json()
+          console.log(data)
           setSavedPosts(data)
         } catch(error) {
           console.log("Failed to fetch saved posts: ", error)
@@ -74,6 +80,7 @@ export default function NewPostPage() {
     }
   }, [isRefreshRequire])
 
+  // Make newpost and init input field
   useEffect(() => {
     async function MakeNewPost() {
       if(isSubmitting) {
@@ -87,6 +94,30 @@ export default function NewPostPage() {
     }
     MakeNewPost()
   }, [isSubmitting, category, content, title])
+
+  // Ref save the newestValue for Autosaving.
+  useEffect(() => {
+    categoryRef.current = category;
+    titleRef.current = title;
+    contentRef.current = content;
+  }, [category, title, content]);
+
+  // Autosaving every 60s
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (
+        categoryRef.current.trim() !== "" ||
+        titleRef.current.trim() !== "" ||
+        contentRef.current.trim() !== ""
+      ) {
+        SavePost("AutoSave", categoryRef.current, titleRef.current, contentRef.current)
+          .then(() => setIsRefreshRequire(true))
+          .catch(console.error);
+      }
+    }, 60 * 1000);
+
+    return () => clearInterval(interval);
+  }, [])
 
   return (
     <div className="mt-3">
@@ -140,7 +171,7 @@ export default function NewPostPage() {
           <div 
             className="pl-7 h-full flex items-center"
             onClick={async () => {
-              await SavePost(category, title, content)
+              await SavePost("Save Post", category, title, content)
               setIsRefreshRequire(true)
             }}
           >
@@ -192,7 +223,11 @@ export default function NewPostPage() {
                 return (
                   <li key={savedPost.id} className="flex items-center group">
                     <span className="w-[75px] mr-10">
-                      {getTimeDiff(savedPost.createdAt)}
+                      {savedPost.id === 0 ?
+                        "Auto Saved"
+                        :
+                        getTimeDiff(savedPost.createdAt)
+                      }
                     </span>
                     <span className="hover:underline cursor-pointer mr-2">
                       {savedPost.title === "" ? "Untitled" : savedPost.title}
@@ -259,16 +294,25 @@ async function SubmitNewPost(
 }
 
 async function SavePost(
+  method: "Save Post" | "AutoSave",
   category: string, 
   title:string, 
   content: string
 ) {
-  const data = {
-    route: "Save Post",
-    category,
-    title,
-    content
-  }
+  const data = method === "Save Post" ? 
+    {
+      route: "Save Post",
+      category,
+      title,
+      content
+    }
+    :
+    {
+      route: "AutoSave",
+      category,
+      title,
+      content,
+    }
 
   try {
     const result = await fetch('/api/admin/newpost', {
@@ -280,7 +324,11 @@ async function SavePost(
     })
     const res = await result.json()
     console.log(res.message)
-    toast.success("Post Saved Successfully!")
+    if(method === "AutoSave") {
+      toast.success("Autosaved Successfully!")
+    }else {
+      toast.success("Post Saved Successfully!")
+    }
   } catch(error) {
     console.error("Error occured..: ", error);
     toast.error("Something went wrong while saving post...")
