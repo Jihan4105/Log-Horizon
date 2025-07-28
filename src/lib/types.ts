@@ -18,6 +18,18 @@ export type SavedPostsData = {
   category: string;
 }
 
+export type PostData = {
+  id: number;
+  title: string;
+  content: string;
+  createdAt: string;
+  updatedAt: string;
+  likes: number;
+  hmms: number;
+  unlikes: number;
+  category: string;
+}
+
 export type SetItemsType = React.Dispatch<React.SetStateAction<MinimalTreeItemData[]>>;
 
 export type UserData = {

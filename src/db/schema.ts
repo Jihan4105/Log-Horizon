@@ -19,6 +19,7 @@ export const posts = pgTable("posts", {
   likes: integer("likes").default(0),
   hmms: integer("hmms").default(0),
   unlikes: integer("unlikes").default(0),
+  status:  varchar("status").default("private")
 })
 
 export const comments = pgTable("comments", {

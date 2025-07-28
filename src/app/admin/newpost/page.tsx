@@ -25,7 +25,7 @@ import { RiDeleteBin5Line } from "react-icons/ri";
 export default function NewPostPage() {
   const [categoryItems, setCategoryItems] = useState<MinimalTreeItemData[]>([])
   const [savedPosts, setSavedPosts] = useState<SavedPostsData[]>([])
-  const [category, setCategory] = useState<string>("");
+  const [category, setCategory] = useState<string>("None");
   const [title, setTitle] = useState<string>("");
   const [isSaveOpen, setIsSaveOpen] = useState<boolean>(false)
   const [content, setContent] = useState<string>("")
@@ -123,11 +123,11 @@ export default function NewPostPage() {
       <div className="mb-5">
         <DropdownMenu>
           <DropdownMenuTrigger asChild className="border-[#d2d2d2]">
-            <Button variant="outline" className="text-gray-600 outline-none">{category === "" ? 'Selecte the Category' : category}</Button>
+            <Button variant="outline" className="text-gray-600 outline-none">{category === "None" ? 'Selecte the Category' : category}</Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent className="w-56 border-[#d2d2d2] bg-white text-gray-600" align="start">
             <DropdownMenuItem
-              onSelect={() => setCategory("")}
+              onSelect={() => setCategory("None")}
               className="hover:bg-gray-100"
             >
               No Category
