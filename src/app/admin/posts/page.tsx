@@ -1,10 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import clsx from "clsx";
 
 import { Checkbox } from "@/components/ui/checkbox"
 import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -22,6 +22,7 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "@/components/ui/pagination"
+import { AdminPostSkeleton } from "@/components/skeletons/AdminPostSkeleton";
 
 import { IoChevronDown } from "react-icons/io5";
 import { IoSearch } from "react-icons/io5";
@@ -36,14 +37,19 @@ export default function PostsManagementPage() {
   const [searchFilter, setSearchFilter] = useState<string>("title");
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [posts, setPosts] = useState<PostData[]>([]);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [totalPages, setTotalPages] = useState<number>(1);
+  const [temPages, setTemPages] = useState<number>(10)
 
   useEffect(() => {
     async function getPostsData() {
       try {
         const res = await fetch("/api/admin/posts")
         const data = await res.json()
-        console.log(data)
+        setIsLoading(false)
         setPosts(data)
+        setTotalPages(Math.ceil(data.length / 5))
       } catch (error) {
         console.error("Failed to fetch posts data:", error);
       }
@@ -222,8 +228,20 @@ export default function PostsManagementPage() {
       </div>
 
       {/* Posts List */}
-      <ul className="flex flex-col border-1 border-gray-200 mt-3">
-        {
+      <ul className={clsx(
+        "flex flex-col border-gray-200 mt-3",
+        isLoading && "border-none",
+        !isLoading && "border-1"
+      )}>
+        {isLoading ? 
+          <>
+            <AdminPostSkeleton />
+            <AdminPostSkeleton />
+            <AdminPostSkeleton />
+            <AdminPostSkeleton />
+            <AdminPostSkeleton />
+          </>
+          :
           posts.map((post) => {
             return (
               <li 
@@ -300,23 +318,15 @@ export default function PostsManagementPage() {
             )
           })
         }
-        <div className="flex flex-col py-5 px-4">
-          <div className="flex items-center">
-            <Skeleton className="w-[23px] h-[23px] mr-3" />
-            <div>
-              <Skeleton className="h-6 w-[200px] rounded-xl mb-1" />
-              <div className="flex">
-                <Skeleton className="h-4 w-[50px] mr-3" />
-                <Skeleton className="h-4 w-[77px]" />
-              </div>
-            </div>
-          </div>
-        </div>
       </ul>
       <Pagination className="mt-5">
         <PaginationContent>
-          <PaginationItem>
-            <PaginationPrevious href="#" />
+          <PaginationItem className={clsx(
+            currentPage === 1 && "pointer-events-none"
+          )}>
+            <PaginationPrevious href="#" className={clsx(
+              currentPage === 1 && "pointer-events-none opacity-25"
+            )}/>
           </PaginationItem>
           <PaginationItem>
             <PaginationLink href="#">1</PaginationLink>

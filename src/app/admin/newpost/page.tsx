@@ -85,7 +85,7 @@ export default function NewPostPage() {
       if(isSubmitting) {
         const res = await SubmitNewPost(category, title, content, setIsSubmitting)
         if(res !== "fail") {
-          setCategory("")
+          setCategory("None")
           setTitle("")
           setContent("")
         }
