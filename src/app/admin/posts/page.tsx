@@ -29,27 +29,35 @@ import { IoSearch } from "react-icons/io5";
 import { LuDot } from "react-icons/lu";
 import { RiEditLine } from "react-icons/ri";
 import { RiDeleteBin6Line } from "react-icons/ri";
+import { FiChevronLeft, FiChevronsRight } from "react-icons/fi";
+import { FiChevronsLeft } from "react-icons/fi";
+import { FiChevronRight } from "react-icons/fi";
 
 import { PostData } from "@/lib/types";
+
+const POSTS_PER_PAGE = 5;
+const MAX_PAGE_BUTTONS = 4;
 
 export default function PostsManagementPage() {
   const [isSearchEnabled, setIsSearchEnabled] = useState<boolean>(false);
   const [searchFilter, setSearchFilter] = useState<string>("title");
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [posts, setPosts] = useState<PostData[]>([]);
+  const [pagedPosts, setPagedPosts] = useState<PostData[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [totalPages, setTotalPages] = useState<number>(1);
-  const [temPages, setTemPages] = useState<number>(10)
 
   useEffect(() => {
     async function getPostsData() {
       try {
         const res = await fetch("/api/admin/posts")
         const data = await res.json()
-        setIsLoading(false)
         setPosts(data)
-        setTotalPages(Math.ceil(data.length / 5))
+        setPagedPosts(data.slice(0, 5))
+        // setTotalPages(Math.ceil(data.length / POST_PER_PAGE));
+        setTotalPages(10)
+        setIsLoading(false)
       } catch (error) {
         console.error("Failed to fetch posts data:", error);
       }
@@ -57,6 +65,17 @@ export default function PostsManagementPage() {
 
     getPostsData()
   }, [])
+
+  useEffect(() => {
+    if (isLoading || posts.length === 0) return;
+
+    const startIndex = (currentPage - 1) * POSTS_PER_PAGE;
+    const endIndex = startIndex + POSTS_PER_PAGE;
+    setPagedPosts(posts.slice(startIndex, endIndex));
+    setTotalPages(Math.ceil(posts.length / POSTS_PER_PAGE));
+  }, [currentPage, totalPages, isLoading, posts])
+
+  console.log(pagedPosts)
 
   return (
     <div className="mt-3">
@@ -321,29 +340,56 @@ export default function PostsManagementPage() {
       </ul>
       <Pagination className="mt-5">
         <PaginationContent>
-          <PaginationItem className={clsx(
-            currentPage === 1 && "pointer-events-none"
-          )}>
-            <PaginationPrevious href="#" className={clsx(
+          {/* To First Page */}
+          <PaginationItem 
+            onClick={() => setCurrentPage(1)}
+            className={clsx(
+              currentPage === 1 && "pointer-events-none"
+            )}
+          >
+            <FiChevronsLeft className={clsx(
+              "m-2",
               currentPage === 1 && "pointer-events-none opacity-25"
             )}/>
           </PaginationItem>
-          <PaginationItem>
-            <PaginationLink href="#">1</PaginationLink>
+
+          {/* To Previous Page */}
+          <PaginationItem 
+            onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+            className={clsx(
+              "m-2",
+              currentPage === 1 && "pointer-events-none"
+            )}
+          >
+            <FiChevronLeft />
           </PaginationItem>
-          <PaginationItem>
-            <PaginationLink href="#" isActive>
-              2
-            </PaginationLink>
+
+          {/* Dynamic Pages */}
+          {[...Array(totalPages)].map((_, idx) => (
+            <PaginationItem
+              key={idx}
+              onClick={() => setCurrentPage(idx + 1)}
+              className={clsx(
+                "w-[36px] h-[36px] grid place-content-center cursor-pointer rounded-[5px]",
+                currentPage === idx + 1 && "border-1"
+              )}
+            >
+              {idx + 1}
+            </PaginationItem>
+          ))}
+
+          {/* To Next Page */}
+          <PaginationItem
+            onClick={() => setCurrentPage(totalPages)}
+            className={clsx(currentPage === totalPages && "pointer-events-none")}
+          >
+            <FiChevronRight className="m-2"/>
           </PaginationItem>
-          <PaginationItem>
-            <PaginationLink href="#">3</PaginationLink>
-          </PaginationItem>
-          <PaginationItem>
-            <PaginationEllipsis />
-          </PaginationItem>
-          <PaginationItem>
-            <PaginationNext href="#" />
+          <PaginationItem
+            onClick={() => setCurrentPage(totalPages)}
+            className={clsx(currentPage === totalPages && "pointer-events-none")}
+          >
+            <FiChevronsRight className="m-2"/>
           </PaginationItem>
         </PaginationContent>
       </Pagination>

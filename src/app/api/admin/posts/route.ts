@@ -18,7 +18,11 @@ export async function GET() {
               'category', category
           )
       ) AS data
-      FROM posts;
+      FROM (
+        SELECT *
+        FROM posts
+        ORDER BY id ASC
+      ) t;
     `
 
     const result = await db.execute(sql);
