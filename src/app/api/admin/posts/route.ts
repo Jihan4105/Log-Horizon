@@ -15,7 +15,8 @@ export async function GET() {
               'likes', likes,
               'hmms', hmms,
               'unlikes', unlikes,
-              'category', category
+              'category', category,
+              'status', status
           )
       ) AS data
       FROM (

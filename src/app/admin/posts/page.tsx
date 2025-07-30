@@ -16,11 +16,7 @@ import {
 import {
   Pagination,
   PaginationContent,
-  PaginationEllipsis,
   PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
 } from "@/components/ui/pagination"
 import { AdminPostSkeleton } from "@/components/skeletons/AdminPostSkeleton";
 
@@ -47,6 +43,7 @@ export default function PostsManagementPage() {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [totalPages, setTotalPages] = useState<number>(1);
+  const { start, end } = getPageRange(currentPage, totalPages, MAX_PAGE_BUTTONS);
 
   useEffect(() => {
     async function getPostsData() {
@@ -54,9 +51,8 @@ export default function PostsManagementPage() {
         const res = await fetch("/api/admin/posts")
         const data = await res.json()
         setPosts(data)
-        setPagedPosts(data.slice(0, 5))
-        // setTotalPages(Math.ceil(data.length / POST_PER_PAGE));
-        setTotalPages(10)
+        setPagedPosts(data.slice(0, POSTS_PER_PAGE))
+        setTotalPages(Math.ceil(data.length / POSTS_PER_PAGE))
         setIsLoading(false)
       } catch (error) {
         console.error("Failed to fetch posts data:", error);
@@ -68,14 +64,14 @@ export default function PostsManagementPage() {
 
   useEffect(() => {
     if (isLoading || posts.length === 0) return;
-
+    if (currentPage > totalPages) {
+      setCurrentPage(totalPages);
+    }
+    else {
     const startIndex = (currentPage - 1) * POSTS_PER_PAGE;
-    const endIndex = startIndex + POSTS_PER_PAGE;
-    setPagedPosts(posts.slice(startIndex, endIndex));
-    setTotalPages(Math.ceil(posts.length / POSTS_PER_PAGE));
-  }, [currentPage, totalPages, isLoading, posts])
-
-  console.log(pagedPosts)
+      setPagedPosts(posts.slice(startIndex, startIndex + POSTS_PER_PAGE));
+    }
+  }, [currentPage, isLoading, posts, totalPages])
 
   return (
     <div className="mt-3">
@@ -261,7 +257,7 @@ export default function PostsManagementPage() {
             <AdminPostSkeleton />
           </>
           :
-          posts.map((post) => {
+          pagedPosts.map((post) => {
             return (
               <li 
                 key={post.id}
@@ -290,7 +286,9 @@ export default function PostsManagementPage() {
                     </Button>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild className="border-[#d2d2d2]">
-                        <Button variant="outline" className="rounded-none">Public</Button>
+                        <Button variant="outline" className="rounded-none">
+                          {post.status}
+                        </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent className="min-w-[80px] border-[#d2d2d2] bg-white text-gray-600">
                         <DropdownMenuItem
@@ -342,8 +340,9 @@ export default function PostsManagementPage() {
         <PaginationContent>
           {/* To First Page */}
           <PaginationItem 
-            onClick={() => setCurrentPage(1)}
+            onClick={() => setCurrentPage((1))}
             className={clsx(
+              "cursor-pointer",
               currentPage === 1 && "pointer-events-none"
             )}
           >
@@ -357,37 +356,51 @@ export default function PostsManagementPage() {
           <PaginationItem 
             onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
             className={clsx(
-              "m-2",
+              "cursor-pointer",
               currentPage === 1 && "pointer-events-none"
             )}
           >
-            <FiChevronLeft />
+            <FiChevronLeft className={clsx(
+              "m-2",
+              currentPage === 1 && "pointer-events-none opacity-25"
+            )} />
           </PaginationItem>
 
           {/* Dynamic Pages */}
-          {[...Array(totalPages)].map((_, idx) => (
-            <PaginationItem
-              key={idx}
-              onClick={() => setCurrentPage(idx + 1)}
-              className={clsx(
-                "w-[36px] h-[36px] grid place-content-center cursor-pointer rounded-[5px]",
-                currentPage === idx + 1 && "border-1"
-              )}
-            >
-              {idx + 1}
-            </PaginationItem>
-          ))}
+          {Array.from({length: end - start + 1}, (_, idx) => {
+            const pageNum = start + idx;
+            return (
+              <PaginationItem
+                key={pageNum}
+                onClick={() => setCurrentPage(pageNum)}
+                className={clsx(
+                  "w-[36px] h-[36px] grid place-content-center cursor-pointer rounded-[5px]",
+                  currentPage === pageNum && "border-1"
+                )}
+              >
+                {pageNum}
+              </PaginationItem>
+            );
+          })}
 
           {/* To Next Page */}
           <PaginationItem
-            onClick={() => setCurrentPage(totalPages)}
-            className={clsx(currentPage === totalPages && "pointer-events-none")}
+            onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+            className={clsx(
+              "cursor-pointer",
+              currentPage === totalPages && "pointer-events-none opacity-25"
+            )}
           >
             <FiChevronRight className="m-2"/>
           </PaginationItem>
+
+          {/* To Last Page */}
           <PaginationItem
             onClick={() => setCurrentPage(totalPages)}
-            className={clsx(currentPage === totalPages && "pointer-events-none")}
+            className={clsx(
+              "cursor-pointer",
+              currentPage === totalPages && "pointer-events-none opacity-25"
+            )}
           >
             <FiChevronsRight className="m-2"/>
           </PaginationItem>
@@ -408,4 +421,11 @@ function toLocalTime(upatedAt: string): string {
   const hh = String(localizedDate.getHours()).padStart(2, '0');
   const mi = String(localizedDate.getMinutes()).padStart(2, '0');
   return `${yyyy}-${mm}-${dd} ${hh}:${mi}`;
+}
+
+function getPageRange(currentPage: number, totalPages: number, maxButtons: number) {
+  const group = Math.floor((currentPage - 1) / maxButtons);
+  const start = group * maxButtons + 1;
+  const end = Math.min(start + maxButtons - 1, totalPages);
+  return { start, end };
 }
