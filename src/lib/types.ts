@@ -28,7 +28,7 @@ export type PostData = {
   hmms: number;
   unlikes: number;
   category: string;
-  status: string;
+  status: "Public" | "Private";
 }
 
 export type SetItemsType = React.Dispatch<React.SetStateAction<MinimalTreeItemData[]>>;

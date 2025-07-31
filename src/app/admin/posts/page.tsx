@@ -1,5 +1,6 @@
 "use client";
 
+import React from "react";
 import { useEffect, useState } from "react";
 import clsx from "clsx";
 
@@ -29,18 +30,35 @@ import { FiChevronLeft, FiChevronsRight } from "react-icons/fi";
 import { FiChevronsLeft } from "react-icons/fi";
 import { FiChevronRight } from "react-icons/fi";
 
-import { PostData } from "@/lib/types";
+import { MinimalTreeItemData, PostData } from "@/lib/types";
 
 const POSTS_PER_PAGE = 5;
 const MAX_PAGE_BUTTONS = 4;
 
 export default function PostsManagementPage() {
   const [isSearchEnabled, setIsSearchEnabled] = useState<boolean>(false);
+
+  // Datas State
+  const [posts, setPosts] = useState<PostData[]>([]);
+  const [searchedPosts, setSearchedPosts] = useState<PostData[]>([]); 
+  const [pagedPosts, setPagedPosts] = useState<PostData[]>([]); 
+  const [categories, setCategories] = useState<MinimalTreeItemData[]>([]);
+
+  // Search by Text 
   const [searchFilter, setSearchFilter] = useState<string>("title");
   const [searchQuery, setSearchQuery] = useState<string>("");
-  const [posts, setPosts] = useState<PostData[]>([]);
-  const [pagedPosts, setPagedPosts] = useState<PostData[]>([]);
+
+  // Search By Filter
+  const [quickSearch, setQuickSearch] = useState<
+    "all" | 
+    "status_public" | "status_private" |
+    "category_none" | string
+  >("all");
+
+  // Loading State
   const [isLoading, setIsLoading] = useState<boolean>(true);
+
+  // Pagination
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [totalPages, setTotalPages] = useState<number>(1);
   const { start, end } = getPageRange(currentPage, totalPages, MAX_PAGE_BUTTONS);
@@ -51,37 +69,83 @@ export default function PostsManagementPage() {
         const res = await fetch("/api/admin/posts")
         const data = await res.json()
         setPosts(data)
+        setSearchedPosts(data)
         setPagedPosts(data.slice(0, POSTS_PER_PAGE))
-        setTotalPages(Math.ceil(data.length / POSTS_PER_PAGE))
+        setTotalPages(data.length === 0 ? 1 : Math.ceil(data.length / POSTS_PER_PAGE));
         setIsLoading(false)
       } catch (error) {
         console.error("Failed to fetch posts data:", error);
       }
     }
-
+    async function getCategory() {
+      try {
+        const res = await fetch("/api/admin/category");
+        const data = await res.json();
+        setCategories(data);
+      } catch (error) {
+        console.error("Failed to fetch category items:", error);
+      }
+    }
+    
+    getCategory();
     getPostsData()
   }, [])
 
   useEffect(() => {
-    if (isLoading || posts.length === 0) return;
-    if (currentPage > totalPages) {
-      setCurrentPage(totalPages);
+    if (isLoading) return;
+    // Step 1: 퀵필터 적용
+    let filtered = posts;
+    if (quickSearch !== "all") {
+      if (quickSearch === "status_public") filtered = filtered.filter(post => post.status === "Public");
+      else if (quickSearch === "status_private") filtered = filtered.filter(post => post.status === "Private");
+      else if (quickSearch === "category_none") filtered = filtered.filter(post => post.category === "None");
+      else filtered = filtered.filter(post => post.category === quickSearch);
     }
-    else {
-    const startIndex = (currentPage - 1) * POSTS_PER_PAGE;
-      setPagedPosts(posts.slice(startIndex, startIndex + POSTS_PER_PAGE));
+
+    // Step 2: 검색 적용 (isSearchEnabled 시에만)
+    if (isSearchEnabled && searchQuery) {
+      filtered = filtered.filter(post =>
+        (searchFilter === "title"
+          ? post.title?.toLowerCase()
+          : post.content?.toLowerCase()
+        )?.includes(searchQuery.toLowerCase())
+      );
     }
-  }, [currentPage, isLoading, posts, totalPages])
+
+    // Step 3: 페이지네이션
+    const totalFiltered = filtered.length;
+    const pageCount = totalFiltered === 0 ? 1 : Math.ceil(totalFiltered / POSTS_PER_PAGE);
+    const validPage = Math.min(currentPage, pageCount);
+
+    const startIndex = (validPage - 1) * POSTS_PER_PAGE;
+    const paged = filtered.slice(startIndex, startIndex + POSTS_PER_PAGE);
+
+    setSearchedPosts(filtered);
+    setTotalPages(pageCount);
+    setCurrentPage(validPage);
+    setPagedPosts(paged);
+  }, [
+    posts,
+    quickSearch,
+    searchQuery,
+    searchFilter,
+    isSearchEnabled,
+    currentPage,
+    isLoading
+  ]);
 
   return (
     <div className="mt-3">
       <h1 className="text-xl font-bold mb-2">
         Posts Management 
-        <span className="text-[16px] font-medium ml-2">35</span>
       </h1>
 
       {/* Search Bar */}
-      <div className="flex justify-between items-center border-1 border-gray-200 py-1 px-4">
+      <div className={clsx(
+        "flex justify-between items-center border-1 py-1 px-4",
+        isSearchEnabled && "border-black",
+        !isSearchEnabled && "border-gray-200"
+      )}>
         {!isSearchEnabled ? 
           <>
             <div className="flex items-center">
@@ -113,24 +177,27 @@ export default function PostsManagementPage() {
                   </DropdownMenuLabel>
                   <DropdownMenuItem>
                     <span className="ml-3">
-                      no category
+                      No category
                     </span>
                   </DropdownMenuItem>
-                  <DropdownMenuItem>
-                    <span className="ml-3">
-                      IT
-                    </span>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem>
-                    <span className="ml-3">
-                      ㄴ HTML
-                    </span>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem>
-                    <span className="ml-3">
-                      Write
-                    </span>
-                  </DropdownMenuItem>
+                  {categories.map((rootItem) => (
+                    <React.Fragment key={rootItem.id}>
+                      <DropdownMenuItem
+                        className="hover:bg-gray-100"
+                      >
+                        {rootItem.value}
+                      </DropdownMenuItem>
+      
+                      {rootItem.children?.map((child) => (
+                        <DropdownMenuItem
+                          key={child.id}
+                          className="hover:bg-gray-100"
+                        >
+                          - {child.value}
+                        </DropdownMenuItem>
+                      ))}
+                    </React.Fragment>
+                  ))}
                 </DropdownMenuContent>
               </DropdownMenu>
             </div>
@@ -143,53 +210,60 @@ export default function PostsManagementPage() {
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent className="bg-white border-[#d2d2d2]">
-                  <DropdownMenuItem>
+                  <DropdownMenuItem
+                    onSelect={() => {setQuickSearch("all");}}
+                  >
                     View all posts
                   </DropdownMenuItem>
                   <DropdownMenuSeparator className="bg-gray-200"/>
                   <DropdownMenuLabel className="text-gray-400">Status view</DropdownMenuLabel>
-                  <DropdownMenuItem>
-                    <span className="ml-3">
-                      all
-                    </span>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem>
+                  <DropdownMenuItem
+                    onSelect={() => {setQuickSearch("status_public");}}
+                  >
                     <span className="ml-3">
                       public
                     </span>
                   </DropdownMenuItem>
-                  <DropdownMenuItem>
+                  <DropdownMenuItem
+                    onSelect={() => {setQuickSearch("status_private");}}
+                  >
                     <span className="ml-3">
                       private
                     </span>
                   </DropdownMenuItem>
                   <DropdownMenuSeparator className="bg-gray-200" />
                   <DropdownMenuLabel className="text-gray-400">Category view</DropdownMenuLabel>
-                  <DropdownMenuItem>
-                    <span className="ml-3">
-                      view all categories
-                    </span>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem>
+                  <DropdownMenuItem
+                    onSelect={() => {setQuickSearch("category_none");}}
+                  >
                     <span className="ml-3">
                       no category
                     </span>
                   </DropdownMenuItem>
-                  <DropdownMenuItem>
-                    <span className="ml-3">
-                      IT
-                    </span>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem>
-                    <span className="ml-3">
-                      ㄴ HTML
-                    </span>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem>
-                    <span className="ml-3">
-                      Write
-                    </span>
-                  </DropdownMenuItem>
+                  {categories.map((rootItem) => (
+                    <React.Fragment key={rootItem.id}>
+                      <DropdownMenuItem
+                        className="hover:bg-gray-100"
+                        onSelect={() => {setQuickSearch(rootItem.value)}}
+                      >
+                        <span className="ml-3">
+                          {rootItem.value}
+                        </span>
+                      </DropdownMenuItem>
+      
+                      {rootItem.children?.map((child) => (
+                        <DropdownMenuItem
+                          key={child.id}
+                          className="hover:bg-gray-100"
+                          onSelect={() => {setQuickSearch(child.value)}}
+                        >
+                          <span className="ml-3">
+                            ㄴ {child.value}
+                          </span>
+                        </DropdownMenuItem>
+                      ))}
+                    </React.Fragment>
+                  ))}
                 </DropdownMenuContent>
               </DropdownMenu>
               <Button 
@@ -234,7 +308,7 @@ export default function PostsManagementPage() {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
-            <IoSearch className="cursor-pointer"/>
+            <IoSearch className="cursor-pointer min-h-[16px] min-w-[16px]"/>
             <Button variant={"ghost"} onClick={() => setIsSearchEnabled(!isSearchEnabled)}>
               close
             </Button>
@@ -304,7 +378,7 @@ export default function PostsManagementPage() {
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </div>
-                  <div className="group-hover:opacity-100 opacity-0 lg:hidden">
+                  <div className="lg:hidden">
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
                         <Button variant="ghost" className="ml-4 rounded-full bg-[#F0F8FF]">
