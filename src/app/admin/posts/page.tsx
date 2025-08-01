@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import clsx from "clsx";
 
 import { Checkbox } from "@/components/ui/checkbox"
@@ -40,8 +40,6 @@ export default function PostsManagementPage() {
 
   // Datas State
   const [posts, setPosts] = useState<PostData[]>([]);
-  const [searchedPosts, setSearchedPosts] = useState<PostData[]>([]); 
-  const [pagedPosts, setPagedPosts] = useState<PostData[]>([]); 
   const [categories, setCategories] = useState<MinimalTreeItemData[]>([]);
 
   // Search by Text 
@@ -60,41 +58,11 @@ export default function PostsManagementPage() {
 
   // Pagination
   const [currentPage, setCurrentPage] = useState<number>(1);
-  const [totalPages, setTotalPages] = useState<number>(1);
-  const { start, end } = getPageRange(currentPage, totalPages, MAX_PAGE_BUTTONS);
 
-  useEffect(() => {
-    async function getPostsData() {
-      try {
-        const res = await fetch("/api/admin/posts")
-        const data = await res.json()
-        setPosts(data)
-        setSearchedPosts(data)
-        setPagedPosts(data.slice(0, POSTS_PER_PAGE))
-        setTotalPages(data.length === 0 ? 1 : Math.ceil(data.length / POSTS_PER_PAGE));
-        setIsLoading(false)
-      } catch (error) {
-        console.error("Failed to fetch posts data:", error);
-      }
-    }
-    async function getCategory() {
-      try {
-        const res = await fetch("/api/admin/category");
-        const data = await res.json();
-        setCategories(data);
-      } catch (error) {
-        console.error("Failed to fetch category items:", error);
-      }
-    }
-    
-    getCategory();
-    getPostsData()
-  }, [])
-
-  useEffect(() => {
-    if (isLoading) return;
-    // Step 1: 퀵필터 적용
+  const filteredPosts = useMemo(() => {
     let filtered = posts;
+
+    // quickSearch 필터
     if (quickSearch !== "all") {
       if (quickSearch === "status_public") filtered = filtered.filter(post => post.status === "Public");
       else if (quickSearch === "status_private") filtered = filtered.filter(post => post.status === "Private");
@@ -102,7 +70,7 @@ export default function PostsManagementPage() {
       else filtered = filtered.filter(post => post.category === quickSearch);
     }
 
-    // Step 2: 검색 적용 (isSearchEnabled 시에만)
+    // 텍스트 검색
     if (isSearchEnabled && searchQuery) {
       filtered = filtered.filter(post =>
         (searchFilter === "title"
@@ -112,27 +80,36 @@ export default function PostsManagementPage() {
       );
     }
 
-    // Step 3: 페이지네이션
-    const totalFiltered = filtered.length;
-    const pageCount = totalFiltered === 0 ? 1 : Math.ceil(totalFiltered / POSTS_PER_PAGE);
-    const validPage = Math.min(currentPage, pageCount);
+    return filtered;
+  }, [posts, quickSearch, isSearchEnabled, searchFilter, searchQuery]);
 
-    const startIndex = (validPage - 1) * POSTS_PER_PAGE;
-    const paged = filtered.slice(startIndex, startIndex + POSTS_PER_PAGE);
+  const totalPages = Math.max(1, Math.ceil(filteredPosts.length / POSTS_PER_PAGE));
+  const { start, end } = useMemo(
+    () => getPageRange(currentPage, totalPages, MAX_PAGE_BUTTONS),
+    [currentPage, totalPages]
+  );
+  const pagedPosts = useMemo(() => {
+    const startIndex = (currentPage - 1) * POSTS_PER_PAGE;
+    return filteredPosts.slice(startIndex, startIndex + POSTS_PER_PAGE);
+  }, [filteredPosts, currentPage]);
 
-    setSearchedPosts(filtered);
-    setTotalPages(pageCount);
-    setCurrentPage(validPage);
-    setPagedPosts(paged);
-  }, [
-    posts,
-    quickSearch,
-    searchQuery,
-    searchFilter,
-    isSearchEnabled,
-    currentPage,
-    isLoading
-  ]);
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery, isSearchEnabled, searchFilter, quickSearch]);
+
+  useEffect(() => {
+    async function fetchAll() {
+      setIsLoading(true);
+      const [postRes, catRes] = await Promise.all([
+        fetch("/api/admin/posts"),
+        fetch("/api/admin/category"),
+      ]);
+      setPosts(await postRes.json());
+      setCategories(await catRes.json());
+      setIsLoading(false);
+    }
+    fetchAll();
+  }, []);
 
   return (
     <div className="mt-3">
@@ -323,13 +300,7 @@ export default function PostsManagementPage() {
         !isLoading && "border-1"
       )}>
         {isLoading ? 
-          <>
-            <AdminPostSkeleton />
-            <AdminPostSkeleton />
-            <AdminPostSkeleton />
-            <AdminPostSkeleton />
-            <AdminPostSkeleton />
-          </>
+          Array.from({ length: POSTS_PER_PAGE }).map((_, idx) => <AdminPostSkeleton key={idx} />)
           :
           pagedPosts.map((post) => {
             return (
