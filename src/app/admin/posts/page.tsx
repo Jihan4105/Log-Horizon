@@ -29,6 +29,8 @@ import { RiDeleteBin6Line } from "react-icons/ri";
 import { FiChevronLeft, FiChevronsRight } from "react-icons/fi";
 import { FiChevronsLeft } from "react-icons/fi";
 import { FiChevronRight } from "react-icons/fi";
+import { HiOutlineXMark } from "react-icons/hi2";
+
 
 import { MinimalTreeItemData, PostData } from "@/lib/types";
 
@@ -88,10 +90,17 @@ export default function PostsManagementPage() {
     () => getPageRange(currentPage, totalPages, MAX_PAGE_BUTTONS),
     [currentPage, totalPages]
   );
+  
   const pagedPosts = useMemo(() => {
     const startIndex = (currentPage - 1) * POSTS_PER_PAGE;
     return filteredPosts.slice(startIndex, startIndex + POSTS_PER_PAGE);
   }, [filteredPosts, currentPage]);
+
+  const filterTags: Array<{
+    key: string;
+    label: string;
+    onRemove: () => void;
+  }> = [];
 
   useEffect(() => {
     setCurrentPage(1);
@@ -110,6 +119,41 @@ export default function PostsManagementPage() {
     }
     fetchAll();
   }, []);
+
+  if (
+    quickSearch !== "all" &&
+    quickSearch !== "status_public" &&
+    quickSearch !== "status_private" &&
+    quickSearch !== "category_none"
+  ) {
+    // quickSearch가 카테고리명일 때
+    filterTags.push({
+      key: "category",
+      label: `Category: ${quickSearch}`,
+      onRemove: () => setQuickSearch("all"),
+    });
+  } else if (quickSearch === "category_none") {
+    filterTags.push({
+      key: "category_none",
+      label: `Category: No category`,
+      onRemove: () => setQuickSearch("all"),
+    });
+  } else if (quickSearch === "status_public" || quickSearch === "status_private") {
+    filterTags.push({
+      key: "status",
+      label: `Status: ${quickSearch.replace("status_", "")}`,
+      onRemove: () => setQuickSearch("all"),
+    });
+  }
+
+  // 2) Search Query Tag
+  if (isSearchEnabled && searchQuery) {
+    filterTags.push({
+      key: "query",
+      label: `Query: ${searchQuery}`,
+      onRemove: () => setSearchQuery(""),
+    });
+  }
 
   return (
     <div className="mt-3">
@@ -292,6 +336,24 @@ export default function PostsManagementPage() {
           </>
         }
       </div>
+      
+      {/* Filter Tags */}
+      {filterTags.length > 0 && (
+        <div className="mt-3 flex items-center gap-2">
+          {filterTags.map((tag) => (
+            <div
+              key={tag.key}
+              className="rounded-[5px] bg-[#DFEEFF] px-3 py-1.5 text-sm text-gray-600 flex items-center"
+            >
+              {tag.label}
+              <HiOutlineXMark
+                className="ml-2 size-[16px] cursor-pointer"
+                onClick={tag.onRemove}
+              />
+            </div>
+          ))}
+        </div>
+      )}
 
       {/* Posts List */}
       <ul className={clsx(
