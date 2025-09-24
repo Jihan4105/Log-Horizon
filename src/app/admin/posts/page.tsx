@@ -39,10 +39,12 @@ const MAX_PAGE_BUTTONS = 4;
 
 export default function PostsManagementPage() {
   const [isSearchEnabled, setIsSearchEnabled] = useState<boolean>(false);
-
+  
   // Datas State
   const [posts, setPosts] = useState<PostData[]>([]);
   const [categories, setCategories] = useState<MinimalTreeItemData[]>([]);
+  const [checkedPostsId, setCheckedPostsId] = useState<Set<number>>(new Set());
+  const isCheckboxEnabled = checkedPostsId.size > 0;
 
   // Search by Text 
   const [searchFilter, setSearchFilter] = useState<string>("title");
@@ -84,6 +86,8 @@ export default function PostsManagementPage() {
 
     return filtered;
   }, [posts, quickSearch, isSearchEnabled, searchFilter, searchQuery]);
+  const allPostIds = filteredPosts.map(post => post.id);
+  const isAllChecked = allPostIds.length > 0 && allPostIds.every(id => checkedPostsId.has(id));
 
   const totalPages = Math.max(1, Math.ceil(filteredPosts.length / POSTS_PER_PAGE));
   const { start, end } = useMemo(
@@ -106,18 +110,45 @@ export default function PostsManagementPage() {
     setCurrentPage(1);
   }, [searchQuery, isSearchEnabled, searchFilter, quickSearch]);
 
-  useEffect(() => {
-    async function fetchAll() {
-      setIsLoading(true);
-      const [postRes, catRes] = await Promise.all([
-        fetch("/api/admin/posts"),
-        fetch("/api/admin/category"),
-      ]);
-      setPosts(await postRes.json());
-      setCategories(await catRes.json());
-      setIsLoading(false);
+  async function fetchAllData() {
+    setIsLoading(true);
+    const [postRes, catRes] = await Promise.all([
+      fetch("/api/admin/posts"),
+      fetch("/api/admin/category"),
+    ]);
+    setPosts(await postRes.json());
+    setCategories(await catRes.json());
+    setIsLoading(false);
+  }
+
+  // 2) 변경 함수
+  async function handlePostsChange(
+    mode: "category" | "status",
+    changedValue: string,
+    targetPostsId: Set<number>
+  ) {
+    try {
+      const res = await fetch("/api/admin/posts", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          mode,
+          changedValue,
+          targetPostsId: Array.from(targetPostsId),
+        }),
+      });
+      const result = await res.json();
+      if (result.status === 200) {
+        await fetchAllData(); 
+        setCheckedPostsId(new Set());
+      }
+    } catch(error) {
+      console.error("Error Occurred changing posts: ", error);
     }
-    fetchAll();
+  }
+
+  useEffect(() => {
+    fetchAllData();
   }, []);
 
   if (
@@ -170,10 +201,27 @@ export default function PostsManagementPage() {
         {!isSearchEnabled ? 
           <>
             <div className="flex items-center">
-              <Checkbox className="data-[state=checked]:bg-black data-[state=checked]:text-white size-[20px] mr-4"/>
+              <Checkbox 
+                className="data-[state=checked]:bg-black data-[state=checked]:text-white size-[20px] mr-4"
+                checked={isAllChecked}
+                onCheckedChange={(checked) => {
+                  setCheckedPostsId(() => {
+                    if (checked) return new Set(allPostIds);   
+                    else return new Set();                     
+                  });
+                }}
+
+              />
               <DropdownMenu>
-                <DropdownMenuTrigger asChild disabled>
-                  <Button variant={"ghost"} className="focus-visible:border-0 p-0! mr-2" disabled>
+                <DropdownMenuTrigger 
+                  asChild 
+                  disabled={!isCheckboxEnabled}
+                >
+                  <Button 
+                    variant={"ghost"} 
+                    className="focus-visible:border-0 p-0! mr-2" 
+                    disabled={!isCheckboxEnabled}
+                  >
                     change
                     <IoChevronDown />
                   </Button>
@@ -183,12 +231,18 @@ export default function PostsManagementPage() {
                     Status Change
                   </DropdownMenuLabel>
                   <DropdownMenuItem>
-                    <span className="ml-3">
+                    <span 
+                      className="ml-3"
+                      onClick={() => handlePostsChange("status", "Public", checkedPostsId)}
+                    >
                       public
                     </span>
                   </DropdownMenuItem>
                   <DropdownMenuItem>
-                    <span className="ml-3">
+                    <span 
+                      className="ml-3"
+                      onClick={() => handlePostsChange("status", "Private", checkedPostsId)}
+                    >
                       private
                     </span>
                   </DropdownMenuItem>
@@ -197,7 +251,10 @@ export default function PostsManagementPage() {
                     Category Change
                   </DropdownMenuLabel>
                   <DropdownMenuItem>
-                    <span className="ml-3">
+                    <span 
+                      className="ml-3"
+                      onClick={() => handlePostsChange("category", "None", checkedPostsId)}
+                    >
                       No category
                     </span>
                   </DropdownMenuItem>
@@ -205,6 +262,7 @@ export default function PostsManagementPage() {
                     <React.Fragment key={rootItem.id}>
                       <DropdownMenuItem
                         className="hover:bg-gray-100"
+                        onClick={() => handlePostsChange("category", rootItem.value, checkedPostsId)} 
                       >
                         {rootItem.value}
                       </DropdownMenuItem>
@@ -213,6 +271,7 @@ export default function PostsManagementPage() {
                         <DropdownMenuItem
                           key={child.id}
                           className="hover:bg-gray-100"
+                          onClick={() => handlePostsChange("category", child.value, checkedPostsId) }
                         >
                           - {child.value}
                         </DropdownMenuItem>
@@ -371,7 +430,21 @@ export default function PostsManagementPage() {
                 className="group py-5 px-4 flex items-center hover:bg-[#F9F9FF] cursor-pointer justify-between [&:not(:last-child)]:border-b border-gray-200"
               >
                 <div className="flex items-center">
-                  <Checkbox className="data-[state=checked]:bg-black data-[state=checked]:text-white size-[20px] mr-4"/>
+                  <Checkbox 
+                    className="data-[state=checked]:bg-black data-[state=checked]:text-white size-[20px] mr-4"
+                    checked={checkedPostsId.has(post.id)}
+                    onCheckedChange={(checked) => {
+                      setCheckedPostsId(prev => {
+                        const next = new Set(prev);
+                        if (checked) {
+                          next.add(post.id);
+                        } else {
+                          next.delete(post.id);
+                        }
+                        return next;
+                      });
+                    }}
+                  />
                   <div>
                     {post.title}
                     <div className="flex items-center text-gray-400 text-xs">
