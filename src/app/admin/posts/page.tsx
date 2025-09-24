@@ -20,6 +20,7 @@ import {
   PaginationItem,
 } from "@/components/ui/pagination"
 import { AdminPostSkeleton } from "@/components/skeletons/AdminPostSkeleton";
+import { toast, Toaster } from "sonner"
 
 import { IoChevronDown } from "react-icons/io5";
 import { IoSearch } from "react-icons/io5";
@@ -120,8 +121,7 @@ export default function PostsManagementPage() {
     setCategories(await catRes.json());
     setIsLoading(false);
   }
-
-  // 2) 변경 함수
+  
   async function handlePostsChange(
     mode: "category" | "status",
     changedValue: string,
@@ -139,10 +139,12 @@ export default function PostsManagementPage() {
       });
       const result = await res.json();
       if (result.status === 200) {
+        toast.success("Posts updated Successfully!");
         await fetchAllData(); 
         setCheckedPostsId(new Set());
       }
     } catch(error) {
+      toast.error("Failed to change posts...");
       console.error("Error Occurred changing posts: ", error);
     }
   }
@@ -586,6 +588,7 @@ export default function PostsManagementPage() {
           </PaginationItem>
         </PaginationContent>
       </Pagination>
+      <Toaster />
     </div>
   )
 }
