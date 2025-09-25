@@ -3,6 +3,7 @@
 import React from "react";
 import { useEffect, useState, useMemo } from "react";
 import clsx from "clsx";
+import Link from "next/link";
 
 import { Checkbox } from "@/components/ui/checkbox"
 import { Button } from "@/components/ui/button";
@@ -460,8 +461,14 @@ export default function PostsManagementPage() {
                 </div>
                 <div>
                   <div className="group-hover:opacity-100 opacity-0 hidden lg:flex gap-2">
-                    <Button variant={"outline"} size={"icon"} className="rounded-none border-[#d2d2d2]">
-                      <RiEditLine />
+                    <Button 
+                      variant={"outline"} 
+                      size={"icon"} 
+                      className="rounded-none border-[#d2d2d2]"
+                    >
+                      <Link href={`/admin/posts/editpost/${post.id}`}>
+                        <RiEditLine />
+                      </Link>
                     </Button>
                     <Button variant={"outline"} size={"icon"}className="rounded-none border-[#d2d2d2]">
                       <RiDeleteBin6Line />

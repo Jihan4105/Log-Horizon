@@ -22,7 +22,11 @@ import { toast, Toaster } from "sonner";
 
 import { RiDeleteBin5Line } from "react-icons/ri";
 
-export default function NewPostPage() {
+export default function  EditPostPage({
+  params,
+}: {
+  params: Promise<{ id: string }>
+}) {
   const [categoryItems, setCategoryItems] = useState<MinimalTreeItemData[]>([])
   const [savedPosts, setSavedPosts] = useState<SavedPostsData[]>([])
   const [category, setCategory] = useState<string>("None");
@@ -57,8 +61,23 @@ export default function NewPostPage() {
       }
     }
 
+    async function getPostData() {
+      const { id } = await params
+      try {
+        const res = await fetch(`/api/admin/posts/${id}`)
+        const postData = await res.json()
+        console.log(postData)
+        setTitle(postData.title)
+        setContent(postData.content)
+        setCategory(postData.category)
+      } catch(error) {
+        console.log("Failed to fetch post data: ", error)
+      }
+    }
+
     getSavedPost()
     getCategory()
+    getPostData()
   }, [])
 
   // Fetch savedPosts after post saved
@@ -83,7 +102,7 @@ export default function NewPostPage() {
   useEffect(() => {
     async function MakeNewPost() {
       if(isSubmitting) {
-        const res = await SubmitNewPost(category, title, content, setIsSubmitting)
+        const res = await EditPost( ,category, title, content, setIsSubmitting)
         if(res !== "fail") {
           setCategory("None")
           setTitle("")
@@ -102,21 +121,21 @@ export default function NewPostPage() {
   }, [category, title, content]);
 
   // Autosaving every 60s
-  useEffect(() => {
-    const interval = setInterval(() => {
-      if (
-        categoryRef.current.trim() !== "" ||
-        titleRef.current.trim() !== "" ||
-        contentRef.current.trim() !== ""
-      ) {
-        SavePost("AutoSave", categoryRef.current, titleRef.current, contentRef.current)
-          .then(() => setIsRefreshRequire(true))
-          .catch(console.error);
-      }
-    }, 60 * 1000);
+  // useEffect(() => {
+  //   const interval = setInterval(() => {
+  //     if (
+  //       categoryRef.current.trim() !== "" ||
+  //       titleRef.current.trim() !== "" ||
+  //       contentRef.current.trim() !== ""
+  //     ) {
+  //       SavePost("AutoSave", categoryRef.current, titleRef.current, contentRef.current)
+  //         .then(() => setIsRefreshRequire(true))
+  //         .catch(console.error);
+  //     }
+  //   }, 60 * 1000);
 
-    return () => clearInterval(interval);
-  }, [])
+  //   return () => clearInterval(interval);
+  // }, [])
 
   return (
     <div className="mt-3">
@@ -130,7 +149,7 @@ export default function NewPostPage() {
               onSelect={() => setCategory("None")}
               className="hover:bg-gray-100"
             >
-              No Category
+              {category === "None" ? "No Category" : category}
             </DropdownMenuItem>
             {categoryItems.map((rootItem) => (
               <React.Fragment key={rootItem.id}>
@@ -275,21 +294,20 @@ export default function NewPostPage() {
   );
 }
 
-async function SubmitNewPost(
+async function EditPost(
   category: string, 
   title:string, 
   content: string, 
   setIsSubmitting: (loading: boolean) => void
 ) {
   const data = {
-    route: "New Post",
     category,
     title,
     content
   }
 
   try {
-    const result = await fetch('/api/admin/newpost', {
+    const result = await fetch(`/api/admin/posts/editpost`, {
       method: 'POST',
       headers: {
         "Content-Type": "application/json",
