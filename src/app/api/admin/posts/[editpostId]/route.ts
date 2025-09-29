@@ -5,15 +5,15 @@ import { db } from "@/db";
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: { editPostId: string } }
 ) {
-  const { id } = params;
+  const { editPostId } = await params
 
   try {
     const post = await db
       .select()
       .from(posts)
-      .where(eq(posts.id, Number(id)));
+      .where(eq(posts.id, Number(editPostId)));
 
     if (post.length === 0) {
       return NextResponse.json(
@@ -26,14 +26,8 @@ export async function GET(
   } catch (error) {
     console.error("Error fetching post:", error);
     return NextResponse.json(
-      { status: 500, error: "Failed to fetch post" },
+      { status: 500, error: "Failed to fetch post", params: params },
       { status: 500 }
     );
   }
-}
-
-export async function POST(
-  req: NextRequest
-) {
-  const { category, title, content}
 }
