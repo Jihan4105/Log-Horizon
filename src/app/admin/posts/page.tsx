@@ -22,6 +22,11 @@ import {
 } from "@/components/ui/pagination"
 import { AdminPostSkeleton } from "@/components/skeletons/AdminPostSkeleton";
 import { toast, Toaster } from "sonner"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover"
 
 import { IoChevronDown } from "react-icons/io5";
 import { IoSearch } from "react-icons/io5";
@@ -147,6 +152,26 @@ export default function PostsManagementPage() {
     } catch(error) {
       toast.error("Failed to change posts...");
       console.error("Error Occurred changing posts: ", error);
+    }
+  }
+
+  async function deletePost(
+    postId: string
+  ) {
+    try {
+      const res = await fetch("/api/admin/posts/deletepost", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ postId }),
+      })
+      const result = await res.json();
+      if (result.status === 200) {
+        toast.success("Post deleted Successfully!");
+        await fetchAllData();
+      }
+    } catch(error) {
+      console.error("Error deleting post: ", error);
+      toast.error("Failed to delete post...");
     }
   }
 
@@ -470,7 +495,12 @@ export default function PostsManagementPage() {
                         <RiEditLine />
                       </Link>
                     </Button>
-                    <Button variant={"outline"} size={"icon"}className="rounded-none border-[#d2d2d2]">
+                    <Button 
+                      variant={"outline"} 
+                      size={"icon"}
+                      className="rounded-none border-[#d2d2d2]"
+                      onClick={() => {}}
+                    >
                       <RiDeleteBin6Line />
                     </Button>
                     <DropdownMenu>
@@ -503,7 +533,9 @@ export default function PostsManagementPage() {
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end" className="min-w-[120px] border-[#d2d2d2] bg-white text-gray-600">
                         <DropdownMenuItem>
-                          <RiEditLine /> Edit
+                          <Link className="flex w-full" href={`/admin/posts/editpost/${post.id}`}>
+                            <RiEditLine className="mr-2"/> Edit
+                          </Link>
                         </DropdownMenuItem>
                         <DropdownMenuItem>
                           <RiDeleteBin6Line /> delete
@@ -596,6 +628,17 @@ export default function PostsManagementPage() {
         </PaginationContent>
       </Pagination>
       <Toaster />
+
+      {/* Overlay */}
+      <div className="absolute z-1000 top-0 left-0 w-full h-full pointer-events-none">
+
+      </div>
+      
+      {/* Popup */}
+      <Popover>
+        <PopoverTrigger>Open</PopoverTrigger>
+        <PopoverContent>Place content for the popover here.</PopoverContent>
+      </Popover>
     </div>
   )
 }
