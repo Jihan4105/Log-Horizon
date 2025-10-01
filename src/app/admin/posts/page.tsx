@@ -37,6 +37,7 @@ import { FiChevronLeft, FiChevronsRight } from "react-icons/fi";
 import { FiChevronsLeft } from "react-icons/fi";
 import { FiChevronRight } from "react-icons/fi";
 import { HiOutlineXMark } from "react-icons/hi2";
+import { IoIosWarning } from "react-icons/io";
 
 
 import { MinimalTreeItemData, PostData } from "@/lib/types";
@@ -69,6 +70,9 @@ export default function PostsManagementPage() {
 
   // Pagination
   const [currentPage, setCurrentPage] = useState<number>(1);
+
+  // Overlay Trigger
+  const [isOverlayVisible, setIsOverlayVisible] = useState<boolean>(false);
 
   const filteredPosts = useMemo(() => {
     let filtered = posts;
@@ -630,15 +634,22 @@ export default function PostsManagementPage() {
       <Toaster />
 
       {/* Overlay */}
-      <div className="absolute z-1000 top-0 left-0 w-full h-full pointer-events-none">
-
+      <div className="absolute z-999 top-0 left-0 w-dvw h-dvh bg-black/20">
+        
       </div>
-      
-      {/* Popup */}
-      <Popover>
-        <PopoverTrigger>Open</PopoverTrigger>
-        <PopoverContent>Place content for the popover here.</PopoverContent>
-      </Popover>
+
+      {/* Modal */}
+      <div className="absolute z-1000 top-1/2 left-1/2 translate-x-[-50%] translate-y-[-50%] bg-white rounded-[5px] shadow-[rgba(0,0,0,0.35)_0px_5px_15px] p-10 grid place-items-center gap-3">
+        <div className="flex items-center">
+          <IoIosWarning className="size-9"/>
+          <span className="text-lg font-semibold">Warning!</span>
+        </div>
+        <div>Are you sure to delete?</div>
+        <div>
+          <Button>Delete</Button>
+          <Button>Cancel</Button>
+        </div>
+      </div>
     </div>
   )
 }
