@@ -22,11 +22,6 @@ import {
 } from "@/components/ui/pagination"
 import { AdminPostSkeleton } from "@/components/skeletons/AdminPostSkeleton";
 import { toast, Toaster } from "sonner"
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover"
 
 import { IoChevronDown } from "react-icons/io5";
 import { IoSearch } from "react-icons/io5";
@@ -503,7 +498,7 @@ export default function PostsManagementPage() {
                       variant={"outline"} 
                       size={"icon"}
                       className="rounded-none border-[#d2d2d2]"
-                      onClick={() => {}}
+                      onClick={() => {setIsOverlayVisible(true)}}
                     >
                       <RiDeleteBin6Line />
                     </Button>
@@ -634,20 +629,35 @@ export default function PostsManagementPage() {
       <Toaster />
 
       {/* Overlay */}
-      <div className="absolute z-999 top-0 left-0 w-dvw h-dvh bg-black/20">
-        
-      </div>
+      <div 
+        className={clsx(
+          "absolute top-0 left-0 w-dvw h-dvh bg-black/20 transition-all duration-300",
+          !isOverlayVisible && "z-[-100] opacity-0",
+          isOverlayVisible && "z-[999] opacity-100"
+        )} 
+      />
 
       {/* Modal */}
-      <div className="absolute z-1000 top-1/2 left-1/2 translate-x-[-50%] translate-y-[-50%] bg-white rounded-[5px] shadow-[rgba(0,0,0,0.35)_0px_5px_15px] p-10 grid place-items-center gap-3">
+      <div 
+        className={clsx(
+          "absolute z-1000 left-1/2 translate-x-[-50%] bg-white rounded-[5px] shadow-[rgba(0,0,0,0.35)_0px_5px_15px] p-8 grid place-items-center gap-5 transition-all duration-300",
+          !isOverlayVisible && "top-0 translate-y-[-100%] opacity-0",
+          isOverlayVisible && "top-1/2 translate-y-[-50%] opacity-100"
+        )}
+      >
         <div className="flex items-center">
           <IoIosWarning className="size-9"/>
-          <span className="text-lg font-semibold">Warning!</span>
+          <span className="text-xl font-semibold">Warning!</span>
         </div>
-        <div>Are you sure to delete?</div>
-        <div>
-          <Button>Delete</Button>
-          <Button>Cancel</Button>
+        <div className="text-lg">Are you sure to delete?</div>
+        <div className="flex gap-3">
+          <Button 
+            variant={"outline"} 
+            onClick={() => {setIsOverlayVisible(false)}}
+          >
+            Cancel
+          </Button>
+          <Button variant={"destructive"}>Delete</Button>
         </div>
       </div>
     </div>

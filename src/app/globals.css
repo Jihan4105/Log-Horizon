@@ -1,5 +1,11 @@
 @import "tailwindcss";
 
+@layer base {
+  :root {
+    --destructive: 0 84.2% 60.2%;
+  }
+}
+
 @theme {
   --breakpoint-xs: 400px;
 }
@@ -24,4 +30,8 @@ input:-webkit-autofill:active {
   100% {
     transform: rotate(360deg);
   }
+}
+
+.bg-destructive {
+  background-color: hsl(var(--destructive));
 }
