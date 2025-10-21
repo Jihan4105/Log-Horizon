@@ -47,6 +47,7 @@ export default function PostsManagementPage() {
   const [posts, setPosts] = useState<PostData[]>([]);
   const [categories, setCategories] = useState<MinimalTreeItemData[]>([]);
   const [checkedPostsId, setCheckedPostsId] = useState<Set<number>>(new Set());
+  const [selectedDeletePostId, setSelectedDeletePostId] = useState<number>(1);
   const isCheckboxEnabled = checkedPostsId.size > 0;
 
   // Search by Text 
@@ -155,7 +156,7 @@ export default function PostsManagementPage() {
   }
 
   async function deletePost(
-    postId: string
+    postId: number
   ) {
     try {
       const res = await fetch("/api/admin/posts/deletepost", {
@@ -166,11 +167,33 @@ export default function PostsManagementPage() {
       const result = await res.json();
       if (result.status === 200) {
         toast.success("Post deleted Successfully!");
+        setIsOverlayVisible(false);
         await fetchAllData();
       }
     } catch(error) {
       console.error("Error deleting post: ", error);
       toast.error("Failed to delete post...");
+    }
+  }
+
+  async function StatusUpdate(
+    postId: number,
+    statusValue: "Public" | "Private"
+  ) {
+    try {
+      const res = await fetch("/api/admin/posts/statuschange", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ postId, statusValue }),
+      })
+      const result = await res.json()
+      if (result.status === 200) {
+        toast.success("Post Status Updated Successfully!");
+        await fetchAllData();
+      }
+    } catch(error) {
+      console.error("Error updating post: ", error);
+      toast.error("Failed to update post...");
     }
   }
 
@@ -480,6 +503,8 @@ export default function PostsManagementPage() {
                       </span>
                       <LuDot className="mr-1"/>
                       <span>{toLocalTime(post.updatedAt)}</span>
+                      <LuDot className="mr-1"/>
+                      <span>{post.status}</span>
                     </div>
                   </div>
                 </div>
@@ -498,7 +523,7 @@ export default function PostsManagementPage() {
                       variant={"outline"} 
                       size={"icon"}
                       className="rounded-none border-[#d2d2d2]"
-                      onClick={() => {setIsOverlayVisible(true)}}
+                      onClick={() => {setIsOverlayVisible(true); setSelectedDeletePostId(post.id)}}
                     >
                       <RiDeleteBin6Line />
                     </Button>
@@ -536,7 +561,7 @@ export default function PostsManagementPage() {
                             <RiEditLine className="mr-2"/> Edit
                           </Link>
                         </DropdownMenuItem>
-                        <DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => {setIsOverlayVisible(true); setSelectedDeletePostId(post.id)}}>
                           <RiDeleteBin6Line /> delete
                         </DropdownMenuItem>
                         <DropdownMenuSeparator className="bg-[#d2d2d2]"/>
@@ -657,7 +682,12 @@ export default function PostsManagementPage() {
           >
             Cancel
           </Button>
-          <Button variant={"destructive"}>Delete</Button>
+          <Button 
+            variant={"destructive"}
+            onClick={() => {deletePost(selectedDeletePostId)}}
+          >
+            Delete
+          </Button>
         </div>
       </div>
     </div>
