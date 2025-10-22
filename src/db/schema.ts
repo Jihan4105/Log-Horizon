@@ -25,9 +25,11 @@ export const posts = pgTable("posts", {
 export const comments = pgTable("comments", {
   id: serial("id").primaryKey(),
   postId: integer("post_id").notNull(),
+  replyId: integer("reply_id").default(-1),
   userId: integer("user_id").notNull(),
   content: text("content").notNull(),
-  createdAt: timestamp("created_at").defaultNow()
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
 })
 
 export const categoryTree = pgTable('category_tree', {

@@ -536,11 +536,13 @@ export default function PostsManagementPage() {
                       <DropdownMenuContent className="min-w-[80px] border-[#d2d2d2] bg-white text-gray-600">
                         <DropdownMenuItem
                           className="hover:bg-gray-100"
-                        >
+                          onClick={() => {StatusUpdate(post.id, "Public")}}
+                          >
                           Public
                         </DropdownMenuItem>
                         <DropdownMenuItem
                           className="hover:bg-gray-100"
+                          onClick={() => {StatusUpdate(post.id, "Private")}}
                         >
                           Private
                         </DropdownMenuItem>
@@ -566,10 +568,14 @@ export default function PostsManagementPage() {
                         </DropdownMenuItem>
                         <DropdownMenuSeparator className="bg-[#d2d2d2]"/>
                         <DropdownMenuLabel className="text-gray-400">Status</DropdownMenuLabel>
-                        <DropdownMenuItem>
+                        <DropdownMenuItem
+                          onClick={() => {StatusUpdate(post.id, "Public")}}
+                        >
                           Public
                         </DropdownMenuItem>
-                        <DropdownMenuItem>
+                        <DropdownMenuItem
+                          onClick={() => {StatusUpdate(post.id, "Private")}}
+                        >
                           Private
                         </DropdownMenuItem>
                       </DropdownMenuContent>
