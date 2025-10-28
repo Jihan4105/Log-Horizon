@@ -38,6 +38,16 @@ export const categoryTree = pgTable('category_tree', {
   parentId: integer('parent_id'), // 최상위 노드는 null
 });
 
+export const users = pgTable("users", {
+  id: varchar("id").primaryKey(),
+  username: varchar("username", { length: 100 }).notNull().unique(),
+  email: varchar("email", { length: 255 }).notNull().unique(),
+  image: text("image").default(""),
+  role: varchar("role", { length: 50 }).default("user"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+})
+
 export const postRelations = relations(posts, ({ many }) => ({
   comments: many(comments)
 }))

@@ -57,6 +57,13 @@
       "when": 1761100053321,
       "tag": "0007_graceful_leech",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1761611753817,
+      "tag": "0008_cold_fantastic_four",
+      "breakpoints": true
     }
   ]
 }
